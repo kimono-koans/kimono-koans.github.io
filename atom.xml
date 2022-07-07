@@ -36,6 +36,34 @@ httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_wi01vc&amp;#x2F;
 </content>
 	</entry>
 	<entry xml:lang="en">
+		<title>Re: packaging, FOSS user expectations are out of alignment</title>
+		<published>2022-06-07T00:00:00+00:00</published>
+		<updated>2022-06-07T00:00:00+00:00</updated>
+		<link href="/user-expectations/" type="text/html"/>
+		<id>/user-expectations/</id>
+		<content type="html">&lt;p&gt;Usually when asked to build a package for your particular distribution, I say, &amp;quot;I&#x27;m afraid I just don&#x27;t have the time, but PRs for your distribution are welcome.&amp;quot;  But my real talk, B-side opinion on FOSS packaging, is -- when you ask a dev to package software in a specific way for you, in the FOSS world, that&#x27;s entitlement, because you can do it yourself.&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, you may &lt;em&gt;refuse to use&lt;&#x2F;em&gt; packages that aren&#x27;t natively packaged just the way you like. But -- for me -- it crosses a line when one whines about the packages that are available. &amp;quot;Ugh, only Flatpak (or deb, or rpm), how dare you, the dev, not pay attention to my tastes after I&#x27;ve done &lt;em&gt;nothing&lt;&#x2F;em&gt;, contributed &lt;em&gt;nothing&lt;&#x2F;em&gt;.&amp;quot;&lt;&#x2F;p&gt;
+&lt;p&gt;Because one should &lt;em&gt;build a package&lt;&#x2F;em&gt; or two before they are entitled to an opinion about the packaging a dev uses for their personal project.  Why?  Because packaging sucks. It&#x27;s the last thing anyone wants to do. And when you do make a package, and no one is happy, it sucks even more.&lt;&#x2F;p&gt;
+&lt;p&gt;A few common refrains and my feelings --&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&amp;quot;What no pkgsrc?&amp;quot; &amp;quot;Where&#x27;s my PKGBUILD?&amp;quot;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;I use&#x2F;like pkgsrc and have used PKGBUILD and think it&#x27;s pretty neat, but I think we all know these are fairly niche systems.  People&#x2F;users who use fairly niche systems should be the first to take responsibility for them, and not expect someone else to do it for them.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&amp;quot;Just figure out my preferred packaging and distribution system (I have no idea but I imagine it&#x27;s easy).&amp;quot;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Why?  The software builds on my system just fine, and there are instructions for you to build it yourself.  &amp;quot;But you want me as a user...&amp;quot;  Explain this to me -- do I want anyone as a user who is not willing to build their own package for their distribution&#x2F;OS?  Because that user &lt;em&gt;tends to be&lt;&#x2F;em&gt; more of a consumer (who doesn&#x27;t pay) than a valued community member.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&amp;quot;The package you distribute doesn&#x27;t work on my slightly different system.&amp;quot;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;I totally sympathize, but this is the problem with packaging.  You ship one binary with one dependency, say libc, and guess what?  Debian 10 or whatever decides to use a version that is way older than what Ubuntu uses.  I guess we need 3 more Debian packages then...  Yeesh.&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&amp;quot;Snap&#x2F;Flatpak&#x2F;AppImage sucks.&amp;quot;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Maybe.  At least they allow you to easily ship your dependencies.  The concept seems quite nice when: 1) there are multiple packaging models to be covered, 2) distribution maintainers are overworked and aren&#x27;t packaging your software for you, and 3) their distribution&#x27;s users aren&#x27;t helping you or them out either.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
 		<title>Workflow: ZFS snapshot-ed file versions to tar and git archives with httm</title>
 		<published>2022-05-07T00:00:00+00:00</published>
 		<updated>2022-05-07T00:00:00+00:00</updated>
@@ -67,22 +95,6 @@ cd .&amp;#x2F;archive-git
 git log -p
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;Is there a Unix-y workflow you&#x27;d like to see covered by &lt;code&gt;httm&lt;&#x2F;code&gt;?  Let me know in the comments!&lt;&#x2F;p&gt;
-</content>
-	</entry>
-	<entry xml:lang="en">
-		<title>FOSS user expectations are out of alignment</title>
-		<published>2022-05-07T00:00:00+00:00</published>
-		<updated>2022-05-07T00:00:00+00:00</updated>
-		<link href="/user-expectations/" type="text/html"/>
-		<id>/user-expectations/</id>
-		<content type="html">&lt;p&gt;Usually when asked to build a package for your particular distribution, I say, &amp;quot;I&#x27;m afraid I just don&#x27;t have the time, but PRs for your distribution are welcome.&amp;quot;  But my real talk, B-side opinion on FOSS packaging, is -- when you ask a dev to package software in a specific way for you, in the FOSS world, that&#x27;s entitlement, because you can do it yourself.&lt;&#x2F;p&gt;
-&lt;p&gt;Of course, you may &lt;em&gt;refuse to use&lt;&#x2F;em&gt; packages that aren&#x27;t natively packaged just the way you like. But -- for me -- it crosses a line when one whines about the packages that are available. &amp;quot;Ugh, only Snap (or deb, or rpm), how dare you, the dev, not pay attention to my tastes after I&#x27;ve done &lt;em&gt;nothing&lt;&#x2F;em&gt;, contributed &lt;em&gt;nothing&lt;&#x2F;em&gt;.&amp;quot;&lt;&#x2F;p&gt;
-&lt;p&gt;Because one should &lt;em&gt;build a package&lt;&#x2F;em&gt; or two before they are entitled to an opinion about the packaging a dev uses for their personal project, because packaging sucks. It&#x27;s the last thing anyone wants to do. And when you do make a package, and no one is happy, it sucks even more.&lt;&#x2F;p&gt;
-&lt;p&gt;A few common refrains and my feelings --&lt;&#x2F;p&gt;
-&lt;p&gt;&amp;quot;What no pkgsrc?&amp;quot; &amp;quot;Where&#x27;s my PKGBUILD?&amp;quot;  I use&#x2F;like pkgsrc and have used PKGBUILD and think it&#x27;s pretty neat, but I think we all know these are fairly niche systems.  People&#x2F;users who use fairly niche systems should be the first to take responsibility for them, and not expect someone else to do it for them.&lt;&#x2F;p&gt;
-&lt;p&gt;&amp;quot;Just figure out my preferred packaging and distribution system (I have no idea but I imagine it&#x27;s easy).&amp;quot;  Why?  The software builds on my system just fine, and there are instructions for you to build it yourself.  &amp;quot;But you want me as a user...&amp;quot;  Explain this to me -- do I want anyone as a user who is not willing to build their own package for their distribution&#x2F;OS?  Because that user &lt;em&gt;tends to be&lt;&#x2F;em&gt; more of a consumer (who doesn&#x27;t pay) than a valued community member.&lt;&#x2F;p&gt;
-&lt;p&gt;&amp;quot;The package you distribute doesn&#x27;t work on my slightly different system.&amp;quot;  I totally sympathize, but this is the problem with packaging.  You ship one binary with one dependency, say libc, and guess what?  Debian 10 or whatever decides to use a version that is way older than what Ubuntu uses.  I guess we need 3 more Debian packages then...  Yeesh.&lt;&#x2F;p&gt;
-&lt;p&gt;&amp;quot;Snap&#x2F;Flatpak&#x2F;AppImage sucks.&amp;quot;  Maybe.  At least they allow you to easily ship your dependencies.  The concept seems quite nice when: 1) there are multiple packaging models to be covered, 2) distribution maintainers are overworked and aren&#x27;t packaging your software for you, and 3) their distribution&#x27;s users aren&#x27;t helping you or them out either.&lt;&#x2F;p&gt;
 </content>
 	</entry>
 </feed>
