@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Workflow: ZFS snapshot-ed file versions to tar and git archives with httm - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono&#x27;s blog! Workflow: ZFS snapshot-ed file versions to tar and git archives with httm "/><meta name="keywords" content="programming, misc., httm, ZFS, git, tar" />
+    <meta property="og:title" content="kimono&#x27;s blog! -&nbsp;Workflow: ZFS snapshot-ed file versions to tar and git archives with httm" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="http:&#x2F;&#x2F;kimono-koans.github.io&#x2F;git&#x2F;"/><meta property="og:description" content="kimono&#x27;s blog!"/>
+    <link rel="preload" href="http://kimono-koans.github.io/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="http://kimono-koans.github.io/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="http://kimono-koans.github.io/style.css?h=f8c7bc50801cb0dd9da65fd930c01ca7fb7efd801345957f21cba38c367faec8">
+    <link rel="stylesheet" href="http://kimono-koans.github.io/color/pink.css?h=7b272a1d22c0969cbedbdae17a3b26ae82fc8d1eb0368ac5ab527ee02f81a9c8">
+<link rel="alternate" type="application/atom+xml" title="kimono&#x27;s blog! RSS" href="http://kimono-koans.github.io/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        http://kimono-koans.github.io/about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        http://kimono-koans.github.io/contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        http://kimono-koans.github.io/about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        http://kimono-koans.github.io/contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="http:&#x2F;&#x2F;kimono-koans.github.io&#x2F;git&#x2F;">Workflow: ZFS snapshot-ed file versions to tar and git archives with httm</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2022.05.07
+                [Updated: 2022.05.07]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="http://kimono-koans.github.io/categories/programming/">programming</a>,
+            <a href="http://kimono-koans.github.io/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="http://kimono-koans.github.io/tags/httm/">httm</a>
+        
+    #<a href="http://kimono-koans.github.io/tags/zfs/">ZFS</a>
+        
+    #<a href="http://kimono-koans.github.io/tags/git/">git</a>
+        
+    #<a href="http://kimono-koans.github.io/tags/tar/">tar</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p>For most non-programming tasks, no one actually wants to work within a git repo.  While git repos offer many benefits, including interoperating with the git ecosystem, most of the time, they're just <em>too heavy weight</em> for most system administration tasks.</p>
+<p>Imagine you could have many of those same benefits, but only <em>when you need them</em>.</p>
+<p>Maybe you already know what to do when you want to send all snapshot-ed versions of your <code>syslog</code> via email:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">httm -n &#x2F;var&#x2F;log&#x2F;syslog | tar -zcvf all-versions-syslog.tar.gz -T -
+</code></pre>
+<p>But imagine something a little more difficult.  Imagine you've misconfigured your <code>sysctl.conf</code> and you have just the pal you know knows how to fix it, but she's a half-a-world away.  You think -- <em>who wants to dig through 10+ file versions</em> to identify the source of the error?  Wouldn't it be nice if she could see your changes as you made them incrementally?</p>
+<p>Use <code>httm</code> and this just works:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash"># create variable for file name
+file=&quot;&#x2F;etc&#x2F;sysctl.conf&quot;
+# create git repo
+mkdir .&#x2F;archive-git; cd .&#x2F;archive-git; git init
+# copy each file version to repo and commit after each copy
+for version in $(httm -n $file); do 
+	cp &quot;$version&quot; .&#x2F; 
+	git add &quot;.&#x2F;$(basename $version)&quot; 
+	git commit -m &quot;$(stat -c %y $version)&quot;
+done
+# create git tar.gz archive in the parent directory
+git archive --format=tar.gz -o &quot;..&#x2F;archive-git-$(basename $file).tar.gz&quot; master; cd ..&#x2F;
+</code></pre>
+<p>And to view the your changes incrementally:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">tar zxvf archive-git-sysctl.conf.tar.gz 
+cd .&#x2F;archive-git
+git log -p
+</code></pre>
+<p>Is there a Unix-y workflow you'd like to see covered by <code>httm</code>?  Let me know in the comments!</p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="http://kimono-koans.github.io/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>

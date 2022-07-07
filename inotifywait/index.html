@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Fun with ZFS, httm, and inotifywait - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono&#x27;s blog! Fun with ZFS, httm, and inotifywait "/><meta name="keywords" content="programming, misc., httm, ZFS, inotifywait" />
+    <meta property="og:title" content="kimono&#x27;s blog! -&nbsp;Fun with ZFS, httm, and inotifywait" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="http:&#x2F;&#x2F;kimono-koans.github.io&#x2F;inotifywait&#x2F;"/><meta property="og:description" content="kimono&#x27;s blog!"/>
+    <link rel="preload" href="http://kimono-koans.github.io/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="http://kimono-koans.github.io/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="http://kimono-koans.github.io/style.css?h=f8c7bc50801cb0dd9da65fd930c01ca7fb7efd801345957f21cba38c367faec8">
+    <link rel="stylesheet" href="http://kimono-koans.github.io/color/pink.css?h=7b272a1d22c0969cbedbdae17a3b26ae82fc8d1eb0368ac5ab527ee02f81a9c8">
+<link rel="alternate" type="application/atom+xml" title="kimono&#x27;s blog! RSS" href="http://kimono-koans.github.io/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        http://kimono-koans.github.io/about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        http://kimono-koans.github.io/contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        http://kimono-koans.github.io/about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        http://kimono-koans.github.io/contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="http:&#x2F;&#x2F;kimono-koans.github.io&#x2F;inotifywait&#x2F;">Fun with ZFS, httm, and inotifywait</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2022.06.25
+                [Updated: 2022.06.25]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="http://kimono-koans.github.io/categories/programming/">programming</a>,
+            <a href="http://kimono-koans.github.io/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="http://kimono-koans.github.io/tags/httm/">httm</a>
+        
+    #<a href="http://kimono-koans.github.io/tags/zfs/">ZFS</a>
+        
+    #<a href="http://kimono-koans.github.io/tags/inotifywait/">inotifywait</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p>If you've never used <code>inotifywait</code>, it's pretty handy for when you want to snapshot a directory after a file is accessed, or written to, or moved to a watched directory, etc., like so:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">inotifywait -r -m --exclude &quot;&#x2F;srv&#x2F;downloads&#x2F;incomplete&#x2F;&quot; -e moved_to &quot;&#x2F;srv&#x2F;downloads&#x2F;&quot; | while read -r line; do
+	sudo &#x2F;usr&#x2F;sbin&#x2F;zfs snapshot rpool&#x2F;downloads@snap_&quot;$( &#x2F;bin&#x2F;date +%F-%T )&quot;_completionSnap
+done
+</code></pre>
+<p>However, imagine you're watching a large directory tree where there may be many ZFS datasets, how would you know which dataset to snapshot?</p>
+<p><a href="https://github.com/kimono-koans/httm">httm</a> has your back!</p>
+<p><code>httm -m &lt;INPUT_FILE&gt;</code> will detect and report back the mount of the ZFS dataset upon which that watched file resides, so you can use that mount/dataset in your snapshot scripts:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">inotifywait -r -m --format %w%f --exclude &quot;&#x2F;srv&#x2F;downloads&#x2F;incomplete&#x2F;&quot; -e moved_to &quot;&#x2F;srv&#x2F;downloads&#x2F;&quot; | while read -r line; do
+	filemount=&quot;$(httm -m $line)&quot; 
+	filedataset=&quot;$(mount | grep $filemount | cut -f1 -d&#x27; &#x27;)&quot; 
+	sudo &#x2F;usr&#x2F;sbin&#x2F;zfs snapshot $filedataset@snap_&quot;$( &#x2F;bin&#x2F;date +%F-%T )&quot;_completionSnap 
+done
+</code></pre>
+<p>If you're comfortable with <code>httm</code> making a few choices for you, <code>httm</code> can also take a snapshot from using just the filename as input:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% sudo httm --snap &#x2F;var&#x2F;log&#x2F;syslog
+httm took a snapshot named: rpool&#x2F;ROOT&#x2F;ubuntu_wi01vc&#x2F;var&#x2F;log@snap_Jun-25-2022-23:11:50_httmSnapFileMount
+</code></pre>
+<p>This last feature is ZFS only for right now.</p>
+<p>Available now for <a href="https://github.com/kimono-koans/httm/releases/tag/0.12.6">0.12.6</a>.</p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="http://kimono-koans.github.io/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>

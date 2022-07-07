@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+	<title>kimono&#x27;s blog!</title>
+	<subtitle>kimono&#x27;s blog!</subtitle>
+	<link href="http://kimono-koans.github.io/atom.xml" rel="self" type="application/atom+xml"/>
+  <link href="http://kimono-koans.github.io"/>
+	<generator uri="https://www.getzola.org/">Zola</generator>
+	<updated>2022-06-25T00:00:00+00:00</updated>
+	<id>http://kimono-koans.github.io/atom.xml</id>
+	<entry xml:lang="en">
+		<title>Fun with ZFS, httm, and inotifywait</title>
+		<published>2022-06-25T00:00:00+00:00</published>
+		<updated>2022-06-25T00:00:00+00:00</updated>
+		<link href="http://kimono-koans.github.io/inotifywait/" type="text/html"/>
+		<id>http://kimono-koans.github.io/inotifywait/</id>
+		<content type="html">&lt;p&gt;If you&#x27;ve never used &lt;code&gt;inotifywait&lt;&#x2F;code&gt;, it&#x27;s pretty handy for when you want to snapshot a directory after a file is accessed, or written to, or moved to a watched directory, etc., like so:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;inotifywait -r -m --exclude &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;incomplete&amp;#x2F;&amp;quot; -e moved_to &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;&amp;quot; | while read -r line; do
+	sudo &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;zfs snapshot rpool&amp;#x2F;downloads@snap_&amp;quot;$( &amp;#x2F;bin&amp;#x2F;date +%F-%T )&amp;quot;_completionSnap
+done
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;However, imagine you&#x27;re watching a large directory tree where there may be many ZFS datasets, how would you know which dataset to snapshot?&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; has your back!&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;httm -m &amp;lt;INPUT_FILE&amp;gt;&lt;&#x2F;code&gt; will detect and report back the mount of the ZFS dataset upon which that watched file resides, so you can use that mount&#x2F;dataset in your snapshot scripts:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;inotifywait -r -m --format %w%f --exclude &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;incomplete&amp;#x2F;&amp;quot; -e moved_to &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;&amp;quot; | while read -r line; do
+	filemount=&amp;quot;$(httm -m $line)&amp;quot; 
+	filedataset=&amp;quot;$(mount | grep $filemount | cut -f1 -d&amp;#x27; &amp;#x27;)&amp;quot; 
+	sudo &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;zfs snapshot $filedataset@snap_&amp;quot;$( &amp;#x2F;bin&amp;#x2F;date +%F-%T )&amp;quot;_completionSnap 
+done
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If you&#x27;re comfortable with &lt;code&gt;httm&lt;&#x2F;code&gt; making a few choices for you, &lt;code&gt;httm&lt;&#x2F;code&gt; can also take a snapshot from using just the filename as input:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% sudo httm --snap &amp;#x2F;var&amp;#x2F;log&amp;#x2F;syslog
+httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_wi01vc&amp;#x2F;var&amp;#x2F;log@snap_Jun-25-2022-23:11:50_httmSnapFileMount
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This last feature is ZFS only for right now.&lt;&#x2F;p&gt;
+&lt;p&gt;Available now for &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;releases&#x2F;tag&#x2F;0.12.6&quot;&gt;0.12.6&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Workflow: ZFS snapshot-ed file versions to tar and git archives with httm</title>
+		<published>2022-05-07T00:00:00+00:00</published>
+		<updated>2022-05-07T00:00:00+00:00</updated>
+		<link href="http://kimono-koans.github.io/git/" type="text/html"/>
+		<id>http://kimono-koans.github.io/git/</id>
+		<content type="html">&lt;p&gt;For most non-programming tasks, no one actually wants to work within a git repo.  While git repos offer many benefits, including interoperating with the git ecosystem, most of the time, they&#x27;re just &lt;em&gt;too heavy weight&lt;&#x2F;em&gt; for most system administration tasks.&lt;&#x2F;p&gt;
+&lt;p&gt;Imagine you could have many of those same benefits, but only &lt;em&gt;when you need them&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Maybe you already know what to do when you want to send all snapshot-ed versions of your &lt;code&gt;syslog&lt;&#x2F;code&gt; via email:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;httm -n &amp;#x2F;var&amp;#x2F;log&amp;#x2F;syslog | tar -zcvf all-versions-syslog.tar.gz -T -
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But imagine something a little more difficult.  Imagine you&#x27;ve misconfigured your &lt;code&gt;sysctl.conf&lt;&#x2F;code&gt; and you have just the pal you know knows how to fix it, but she&#x27;s a half-a-world away.  You think -- &lt;em&gt;who wants to dig through 10+ file versions&lt;&#x2F;em&gt; to identify the source of the error?  Wouldn&#x27;t it be nice if she could see your changes as you made them incrementally?&lt;&#x2F;p&gt;
+&lt;p&gt;Use &lt;code&gt;httm&lt;&#x2F;code&gt; and this just works:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;# create variable for file name
+file=&amp;quot;&amp;#x2F;etc&amp;#x2F;sysctl.conf&amp;quot;
+# create git repo
+mkdir .&amp;#x2F;archive-git; cd .&amp;#x2F;archive-git; git init
+# copy each file version to repo and commit after each copy
+for version in $(httm -n $file); do 
+	cp &amp;quot;$version&amp;quot; .&amp;#x2F; 
+	git add &amp;quot;.&amp;#x2F;$(basename $version)&amp;quot; 
+	git commit -m &amp;quot;$(stat -c %y $version)&amp;quot;
+done
+# create git tar.gz archive in the parent directory
+git archive --format=tar.gz -o &amp;quot;..&amp;#x2F;archive-git-$(basename $file).tar.gz&amp;quot; master; cd ..&amp;#x2F;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And to view the your changes incrementally:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;tar zxvf archive-git-sysctl.conf.tar.gz 
+cd .&amp;#x2F;archive-git
+git log -p
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Is there a Unix-y workflow you&#x27;d like to see covered by &lt;code&gt;httm&lt;&#x2F;code&gt;?  Let me know in the comments!&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>FOSS user expectations are out of alignment</title>
+		<published>2022-05-07T00:00:00+00:00</published>
+		<updated>2022-05-07T00:00:00+00:00</updated>
+		<link href="http://kimono-koans.github.io/user-expectations/" type="text/html"/>
+		<id>http://kimono-koans.github.io/user-expectations/</id>
+		<content type="html">&lt;p&gt;Usually when asked to build a package for your particular distribution, I say, &amp;quot;I&#x27;m afraid I just don&#x27;t have the time, but PRs for your distribution are welcome.&amp;quot;  But my real talk, B-side opinion on FOSS packaging, is -- when you ask a dev to package software in a specific way for you, in the FOSS world, that&#x27;s entitlement, because you can do it yourself.&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, you may &lt;em&gt;refuse to use&lt;&#x2F;em&gt; packages that aren&#x27;t natively packaged just the way you like. But -- for me -- it crosses a line when one whines about the packages that are available. &amp;quot;Ugh, only Snap (or deb, or rpm), how dare you, the dev, not pay attention to my tastes after I&#x27;ve done &lt;em&gt;nothing&lt;&#x2F;em&gt;, contributed &lt;em&gt;nothing&lt;&#x2F;em&gt;.&amp;quot;&lt;&#x2F;p&gt;
+&lt;p&gt;Because one should &lt;em&gt;build a package&lt;&#x2F;em&gt; or two before they are entitled to an opinion about the packaging a dev uses for their personal project, because packaging sucks. It&#x27;s the last thing anyone wants to do. And when you do make a package, and no one is happy, it sucks even more.&lt;&#x2F;p&gt;
+&lt;p&gt;A few common refrains and my feelings --&lt;&#x2F;p&gt;
+&lt;p&gt;&amp;quot;What no pkgsrc?&amp;quot; &amp;quot;Where&#x27;s my PKGBUILD?&amp;quot;  I use&#x2F;like pkgsrc and have used PKGBUILD and think it&#x27;s pretty neat, but I think we all know these are fairly niche systems.  People&#x2F;users who use fairly niche systems should be the first to take responsibility for them, and not expect someone else to do it for them.&lt;&#x2F;p&gt;
+&lt;p&gt;&amp;quot;Just figure out my preferred packaging and distribution system (I have no idea but I imagine it&#x27;s easy).&amp;quot;  Why?  The software builds on my system just fine, and there are instructions for you to build it yourself.  &amp;quot;But you want me as a user...&amp;quot;  Explain this to me -- do I want anyone as a user who is not willing to build their own package for their distribution&#x2F;OS?  Because that user &lt;em&gt;tends to be&lt;&#x2F;em&gt; more of a consumer (who doesn&#x27;t pay) than a valued community member.&lt;&#x2F;p&gt;
+&lt;p&gt;&amp;quot;The package you distribute doesn&#x27;t work on my slightly different system.&amp;quot;  I totally sympathize, but this is the problem with packaging.  You ship one binary with one dependency, say libc, and guess what?  Debian 10 or whatever decides to use a version that is way older than what Ubuntu uses.  I guess we need 3 more Debian packages then...  Yeesh.&lt;&#x2F;p&gt;
+&lt;p&gt;&amp;quot;Snap&#x2F;Flatpak&#x2F;AppImage sucks.&amp;quot;  Maybe.  At least they allow you to easily ship your dependencies.  The concept seems quite nice when: 1) there are multiple packaging models to be covered, 2) distribution maintainers are overworked and aren&#x27;t packaging your software for you, and 3) their distribution&#x27;s users aren&#x27;t helping you or them out either.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+</feed>

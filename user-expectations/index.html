@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>FOSS user expectations are out of alignment - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono&#x27;s blog! FOSS user expectations are out of alignment "/><meta name="keywords" content="programming, misc., FOSS, open-source, git, tar" />
+    <meta property="og:title" content="kimono&#x27;s blog! -&nbsp;FOSS user expectations are out of alignment" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="http:&#x2F;&#x2F;kimono-koans.github.io&#x2F;user-expectations&#x2F;"/><meta property="og:description" content="kimono&#x27;s blog!"/>
+    <link rel="preload" href="http://kimono-koans.github.io/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="http://kimono-koans.github.io/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="http://kimono-koans.github.io/style.css?h=f8c7bc50801cb0dd9da65fd930c01ca7fb7efd801345957f21cba38c367faec8">
+    <link rel="stylesheet" href="http://kimono-koans.github.io/color/pink.css?h=7b272a1d22c0969cbedbdae17a3b26ae82fc8d1eb0368ac5ab527ee02f81a9c8">
+<link rel="alternate" type="application/atom+xml" title="kimono&#x27;s blog! RSS" href="http://kimono-koans.github.io/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        http://kimono-koans.github.io/about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        http://kimono-koans.github.io/contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        http://kimono-koans.github.io/about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        http://kimono-koans.github.io/contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="http:&#x2F;&#x2F;kimono-koans.github.io&#x2F;user-expectations&#x2F;">FOSS user expectations are out of alignment</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2022.05.07
+                [Updated: 2022.05.07]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="http://kimono-koans.github.io/categories/programming/">programming</a>,
+            <a href="http://kimono-koans.github.io/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="http://kimono-koans.github.io/tags/foss/">FOSS</a>
+        
+    #<a href="http://kimono-koans.github.io/tags/open-source/">open-source</a>
+        
+    #<a href="http://kimono-koans.github.io/tags/git/">git</a>
+        
+    #<a href="http://kimono-koans.github.io/tags/tar/">tar</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p>Usually when asked to build a package for your particular distribution, I say, &quot;I'm afraid I just don't have the time, but PRs for your distribution are welcome.&quot;  But my real talk, B-side opinion on FOSS packaging, is -- when you ask a dev to package software in a specific way for you, in the FOSS world, that's entitlement, because you can do it yourself.</p>
+<p>Of course, you may <em>refuse to use</em> packages that aren't natively packaged just the way you like. But -- for me -- it crosses a line when one whines about the packages that are available. &quot;Ugh, only Snap (or deb, or rpm), how dare you, the dev, not pay attention to my tastes after I've done <em>nothing</em>, contributed <em>nothing</em>.&quot;</p>
+<p>Because one should <em>build a package</em> or two before they are entitled to an opinion about the packaging a dev uses for their personal project, because packaging sucks. It's the last thing anyone wants to do. And when you do make a package, and no one is happy, it sucks even more.</p>
+<p>A few common refrains and my feelings --</p>
+<p>&quot;What no pkgsrc?&quot; &quot;Where's my PKGBUILD?&quot;  I use/like pkgsrc and have used PKGBUILD and think it's pretty neat, but I think we all know these are fairly niche systems.  People/users who use fairly niche systems should be the first to take responsibility for them, and not expect someone else to do it for them.</p>
+<p>&quot;Just figure out my preferred packaging and distribution system (I have no idea but I imagine it's easy).&quot;  Why?  The software builds on my system just fine, and there are instructions for you to build it yourself.  &quot;But you want me as a user...&quot;  Explain this to me -- do I want anyone as a user who is not willing to build their own package for their distribution/OS?  Because that user <em>tends to be</em> more of a consumer (who doesn't pay) than a valued community member.</p>
+<p>&quot;The package you distribute doesn't work on my slightly different system.&quot;  I totally sympathize, but this is the problem with packaging.  You ship one binary with one dependency, say libc, and guess what?  Debian 10 or whatever decides to use a version that is way older than what Ubuntu uses.  I guess we need 3 more Debian packages then...  Yeesh.</p>
+<p>&quot;Snap/Flatpak/AppImage sucks.&quot;  Maybe.  At least they allow you to easily ship your dependencies.  The concept seems quite nice when: 1) there are multiple packaging models to be covered, 2) distribution maintainers are overworked and aren't packaging your software for you, and 3) their distribution's users aren't helping you or them out either.</p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="http://kimono-koans.github.io/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>

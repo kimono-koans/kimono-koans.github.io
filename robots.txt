@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: http://kimono-koans.github.io/sitemap.xml
