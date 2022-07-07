@@ -32,7 +32,7 @@ done
 httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_wi01vc&amp;#x2F;var&amp;#x2F;log@snap_Jun-25-2022-23:11:50_httmSnapFileMount
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;This last feature is ZFS only for right now.&lt;&#x2F;p&gt;
-&lt;p&gt;Available now for &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;releases&#x2F;tag&#x2F;0.12.6&quot;&gt;0.12.6&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Available now for &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;releases&#x2F;tag&#x2F;0.12.6&quot;&gt;0.12.6&lt;&#x2F;a&gt; and later editions.&lt;&#x2F;p&gt;
 </content>
 	</entry>
 	<entry xml:lang="en">
@@ -94,7 +94,7 @@ git archive --format=tar.gz -o &amp;quot;..&amp;#x2F;archive-git-$(basename $fil
 cd .&amp;#x2F;archive-git
 git log -p
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Is there a Unix-y workflow you&#x27;d like to see covered by &lt;code&gt;httm&lt;&#x2F;code&gt;?  Let me know in the comments!&lt;&#x2F;p&gt;
+&lt;p&gt;Is there a Unix-y workflow you&#x27;d like to see covered by &lt;code&gt;httm&lt;&#x2F;code&gt;?  Let me know!&lt;&#x2F;p&gt;
 </content>
 	</entry>
 </feed>
