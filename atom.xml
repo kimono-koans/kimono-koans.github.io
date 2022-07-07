@@ -2,17 +2,17 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
 	<title>kimono&#x27;s blog!</title>
 	<subtitle>kimono&#x27;s blog!</subtitle>
-	<link href="http://kimono-koans.github.io/atom.xml" rel="self" type="application/atom+xml"/>
-  <link href="http://kimono-koans.github.io"/>
+	<link href="/atom.xml" rel="self" type="application/atom+xml"/>
+  <link href="/"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
 	<updated>2022-06-25T00:00:00+00:00</updated>
-	<id>http://kimono-koans.github.io/atom.xml</id>
+	<id>/atom.xml</id>
 	<entry xml:lang="en">
 		<title>Fun with ZFS, httm, and inotifywait</title>
 		<published>2022-06-25T00:00:00+00:00</published>
 		<updated>2022-06-25T00:00:00+00:00</updated>
-		<link href="http://kimono-koans.github.io/inotifywait/" type="text/html"/>
-		<id>http://kimono-koans.github.io/inotifywait/</id>
+		<link href="/inotifywait/" type="text/html"/>
+		<id>/inotifywait/</id>
 		<content type="html">&lt;p&gt;If you&#x27;ve never used &lt;code&gt;inotifywait&lt;&#x2F;code&gt;, it&#x27;s pretty handy for when you want to snapshot a directory after a file is accessed, or written to, or moved to a watched directory, etc., like so:&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;inotifywait -r -m --exclude &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;incomplete&amp;#x2F;&amp;quot; -e moved_to &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;&amp;quot; | while read -r line; do
 	sudo &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;zfs snapshot rpool&amp;#x2F;downloads@snap_&amp;quot;$( &amp;#x2F;bin&amp;#x2F;date +%F-%T )&amp;quot;_completionSnap
@@ -39,8 +39,8 @@ httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_wi01vc&amp;#x2F;
 		<title>Workflow: ZFS snapshot-ed file versions to tar and git archives with httm</title>
 		<published>2022-05-07T00:00:00+00:00</published>
 		<updated>2022-05-07T00:00:00+00:00</updated>
-		<link href="http://kimono-koans.github.io/git/" type="text/html"/>
-		<id>http://kimono-koans.github.io/git/</id>
+		<link href="/git/" type="text/html"/>
+		<id>/git/</id>
 		<content type="html">&lt;p&gt;For most non-programming tasks, no one actually wants to work within a git repo.  While git repos offer many benefits, including interoperating with the git ecosystem, most of the time, they&#x27;re just &lt;em&gt;too heavy weight&lt;&#x2F;em&gt; for most system administration tasks.&lt;&#x2F;p&gt;
 &lt;p&gt;Imagine you could have many of those same benefits, but only &lt;em&gt;when you need them&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
 &lt;p&gt;Maybe you already know what to do when you want to send all snapshot-ed versions of your &lt;code&gt;syslog&lt;&#x2F;code&gt; via email:&lt;&#x2F;p&gt;
@@ -73,8 +73,8 @@ git log -p
 		<title>FOSS user expectations are out of alignment</title>
 		<published>2022-05-07T00:00:00+00:00</published>
 		<updated>2022-05-07T00:00:00+00:00</updated>
-		<link href="http://kimono-koans.github.io/user-expectations/" type="text/html"/>
-		<id>http://kimono-koans.github.io/user-expectations/</id>
+		<link href="/user-expectations/" type="text/html"/>
+		<id>/user-expectations/</id>
 		<content type="html">&lt;p&gt;Usually when asked to build a package for your particular distribution, I say, &amp;quot;I&#x27;m afraid I just don&#x27;t have the time, but PRs for your distribution are welcome.&amp;quot;  But my real talk, B-side opinion on FOSS packaging, is -- when you ask a dev to package software in a specific way for you, in the FOSS world, that&#x27;s entitlement, because you can do it yourself.&lt;&#x2F;p&gt;
 &lt;p&gt;Of course, you may &lt;em&gt;refuse to use&lt;&#x2F;em&gt; packages that aren&#x27;t natively packaged just the way you like. But -- for me -- it crosses a line when one whines about the packages that are available. &amp;quot;Ugh, only Snap (or deb, or rpm), how dare you, the dev, not pay attention to my tastes after I&#x27;ve done &lt;em&gt;nothing&lt;&#x2F;em&gt;, contributed &lt;em&gt;nothing&lt;&#x2F;em&gt;.&amp;quot;&lt;&#x2F;p&gt;
 &lt;p&gt;Because one should &lt;em&gt;build a package&lt;&#x2F;em&gt; or two before they are entitled to an opinion about the packaging a dev uses for their personal project, because packaging sucks. It&#x27;s the last thing anyone wants to do. And when you do make a package, and no one is happy, it sucks even more.&lt;&#x2F;p&gt;

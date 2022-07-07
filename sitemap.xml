@@ -1,60 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>http://kimono-koans.github.io/</loc>
+        <loc>/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/about/</loc>
+        <loc>/about/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/categories/</loc>
+        <loc>/categories/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/categories/misc/</loc>
+        <loc>/categories/misc/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/categories/programming/</loc>
+        <loc>/categories/programming/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/contact/</loc>
+        <loc>/contact/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/git/</loc>
+        <loc>/git/</loc>
         <lastmod>2022-05-07</lastmod>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/inotifywait/</loc>
+        <loc>/inotifywait/</loc>
         <lastmod>2022-06-25</lastmod>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/page/1/</loc>
+        <loc>/page/1/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/tags/</loc>
+        <loc>/tags/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/tags/foss/</loc>
+        <loc>/tags/foss/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/tags/git/</loc>
+        <loc>/tags/git/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/tags/httm/</loc>
+        <loc>/tags/httm/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/tags/inotifywait/</loc>
+        <loc>/tags/inotifywait/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/tags/open-source/</loc>
+        <loc>/tags/open-source/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/tags/tar/</loc>
+        <loc>/tags/tar/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/tags/zfs/</loc>
+        <loc>/tags/zfs/</loc>
     </url>
     <url>
-        <loc>http://kimono-koans.github.io/user-expectations/</loc>
+        <loc>/user-expectations/</loc>
         <lastmod>2022-05-07</lastmod>
     </url>
 </urlset>
