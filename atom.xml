@@ -5,13 +5,48 @@
 	<link href="/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="/"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
-	<updated>2022-06-25T00:00:00+00:00</updated>
+	<updated>2022-10-10T00:00:00+00:00</updated>
 	<id>/atom.xml</id>
+	<entry xml:lang="en">
+		<title>Using `httm` and ZFS to detect file modifications for `dano` (or getting a little sleazy to do a little good)</title>
+		<published>2022-10-10T00:00:00+00:00</published>
+		<updated>2022-10-10T00:00:00+00:00</updated>
+		<link rel="alternate" href="/dano/" type="text/html"/>
+		<id>/dano/</id>
+		<content type="html">&lt;p&gt;One thing ZFS doesn&#x27;t do (and thank goodness it doesn&#x27;t?), it doesn&#x27;t detect out-of-band changes to files.  If a program has the permissions to modify a file, ZFS happily modifies that file.  But, for some files (and for the truly paranoid), we may want to keep additional metadata about file integrity.  For instance, FLAC files keep checksums of its music streams. Another program I wrote, &lt;code&gt;dano&lt;&#x2F;code&gt;, provides a way to do the same for all FFMPEG compatible media streams.&lt;&#x2F;p&gt;
+&lt;p&gt;And perhaps you want to read back and verify such media bitstreams occasionally as one might in a &lt;code&gt;zpool scrub&lt;&#x2F;code&gt;, of course &lt;code&gt;dano&lt;&#x2F;code&gt; lets you do that too:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% find &amp;#x2F;tank&amp;#x2F;Media -type f | dano --test
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But doesn&#x27;t verifying &lt;em&gt;all those checksums&lt;&#x2F;em&gt; take a long time?  And don&#x27;t you already do this when you do a &lt;code&gt;zpool scrub&lt;&#x2F;code&gt;?  Good point!  Wouldn&#x27;t it be nice to only test those files which ZFS tells us have changed (if you trust ZFS)?  One way of doing that would be to keep an index of file changes, but again ZFS already does this for us.  Fortunately &lt;code&gt;httm&lt;&#x2F;code&gt; can help us:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% httm --num versions ~&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;*
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;Cargo.lock&amp;quot; : 3 Versions available.
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;Cargo.toml&amp;quot; : 4 Versions available.
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;LICENSE&amp;quot; : 1 Version available.
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;README.md&amp;quot; : 2 Versions available.
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;httm.1&amp;quot; : 3 Versions available.
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;packaging&amp;quot; : 1 Version available.
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;scripts&amp;quot; : 1 Version available.
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;src&amp;quot; : 6 Versions available.
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;target&amp;quot; : 1 Version available
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Of course, this is really great for determining, at a glace, &amp;quot;Wow these files in &lt;code&gt;&#x2F;etc&lt;&#x2F;code&gt; are seeing lot&#x27;s of churn.  I have more questions...&amp;quot;.  But what I really want, right now, is files with a single version available but which have been around long enough to have at least one snapshot available, &lt;code&gt;httm&lt;&#x2F;code&gt; has you covered:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% httm --num-versions=single-with-snap ~&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;*
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;LICENSE&amp;quot;
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;packaging&amp;quot;
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;scripts&amp;quot;
+&amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;target&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Regarding our original problem, we might rewrite our &lt;code&gt;dano&lt;&#x2F;code&gt; script to verify only those files with modifications that ZFS detected:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% find &amp;#x2F;tank&amp;#x2F;Media -type f | httm --num-versions=single-with-snap | dano --test
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Available in &lt;code&gt;httm&lt;&#x2F;code&gt; version 0.15.2.&lt;&#x2F;p&gt;
+</content>
+	</entry>
 	<entry xml:lang="en">
 		<title>Fun with ZFS, httm, and inotifywait</title>
 		<published>2022-06-25T00:00:00+00:00</published>
 		<updated>2022-06-25T00:00:00+00:00</updated>
-		<link href="/inotifywait/" type="text/html"/>
+		<link rel="alternate" href="/inotifywait/" type="text/html"/>
 		<id>/inotifywait/</id>
 		<content type="html">&lt;p&gt;If you&#x27;ve never used &lt;code&gt;inotifywait&lt;&#x2F;code&gt;, it&#x27;s pretty handy for when you want to snapshot a directory after a file is accessed, or written to, or moved to a watched directory, etc., like so:&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;inotifywait -r -m --exclude &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;incomplete&amp;#x2F;&amp;quot; -e moved_to &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;&amp;quot; | while read -r line; do
@@ -39,7 +74,7 @@ httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_wi01vc&amp;#x2F;
 		<title>Re: packaging, FOSS user expectations are out of alignment</title>
 		<published>2022-06-07T00:00:00+00:00</published>
 		<updated>2022-06-07T00:00:00+00:00</updated>
-		<link href="/user-expectations/" type="text/html"/>
+		<link rel="alternate" href="/user-expectations/" type="text/html"/>
 		<id>/user-expectations/</id>
 		<content type="html">&lt;p&gt;Usually when asked to build a package for your particular distribution, I say, &amp;quot;I&#x27;m afraid I just don&#x27;t have the time, but PRs for your distribution are welcome.&amp;quot;  But my real talk, B-side opinion on FOSS packaging, is -- when you ask a dev to package software in a specific way for you, in the FOSS world, that&#x27;s entitlement, because you can do it yourself.&lt;&#x2F;p&gt;
 &lt;p&gt;Of course, you may &lt;em&gt;refuse to use&lt;&#x2F;em&gt; packages that aren&#x27;t natively packaged just the way you like. But -- for me -- it crosses a line when one whines about the packages that are available. &amp;quot;Ugh, only Flatpak (or deb, or rpm), how dare you, the dev, not pay attention to my tastes after I&#x27;ve done &lt;em&gt;nothing&lt;&#x2F;em&gt;, contributed &lt;em&gt;nothing&lt;&#x2F;em&gt;.&amp;quot;&lt;&#x2F;p&gt;
@@ -67,7 +102,7 @@ httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_wi01vc&amp;#x2F;
 		<title>Workflow: ZFS snapshot-ed file versions to tar and git archives with httm</title>
 		<published>2022-05-07T00:00:00+00:00</published>
 		<updated>2022-05-07T00:00:00+00:00</updated>
-		<link href="/git/" type="text/html"/>
+		<link rel="alternate" href="/git/" type="text/html"/>
 		<id>/git/</id>
 		<content type="html">&lt;p&gt;For most non-programming tasks, no one actually wants to work within a git repo.  While git repos offer many benefits, including interoperating with the git ecosystem, most of the time, they&#x27;re just &lt;em&gt;too heavy weight&lt;&#x2F;em&gt; for most system administration tasks.&lt;&#x2F;p&gt;
 &lt;p&gt;Imagine you could have many of those same benefits, but only &lt;em&gt;when you need them&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;

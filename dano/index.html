@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Using `httm` and ZFS to detect file modifications for `dano` (or getting a little sleazy to do a little good) - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono koans&#x27; blog! Using `httm` and ZFS to detect file modifications for `dano` (or getting a little sleazy to do a little good) "/><meta name="keywords" content="programming, misc., httm, ZFS, rsync" />
+    <meta property="og:title" content="kimono koans&#x27; blog! -&nbsp;Using `httm` and ZFS to detect file modifications for `dano` (or getting a little sleazy to do a little good)" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="&#x2F;dano&#x2F;"/><meta property="og:description" content="kimono koans&#x27; blog!"/>
+    <link rel="preload" href="/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/style.css?h=f8c7bc50801cb0dd9da65fd930c01ca7fb7efd801345957f21cba38c367faec8">
+    <link rel="stylesheet" href="/color/pink.css?h=7b272a1d22c0969cbedbdae17a3b26ae82fc8d1eb0368ac5ab527ee02f81a9c8">
+<link rel="alternate" type="application/atom+xml" title="kimono koans&#x27; blog! RSS" href="/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono-koans
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        /about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        /contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        /about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        /contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="&#x2F;dano&#x2F;">Using `httm` and ZFS to detect file modifications for `dano` (or getting a little sleazy to do a little good)</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2022.10.10
+                [Updated: 2022.10.10]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="/categories/programming/">programming</a>,
+            <a href="/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="/tags/httm/">httm</a>
+        
+    #<a href="/tags/zfs/">ZFS</a>
+        
+    #<a href="/tags/rsync/">rsync</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p>One thing ZFS doesn't do (and thank goodness it doesn't?), it doesn't detect out-of-band changes to files.  If a program has the permissions to modify a file, ZFS happily modifies that file.  But, for some files (and for the truly paranoid), we may want to keep additional metadata about file integrity.  For instance, FLAC files keep checksums of its music streams. Another program I wrote, <code>dano</code>, provides a way to do the same for all FFMPEG compatible media streams.</p>
+<p>And perhaps you want to read back and verify such media bitstreams occasionally as one might in a <code>zpool scrub</code>, of course <code>dano</code> lets you do that too:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% find &#x2F;tank&#x2F;Media -type f | dano --test
+</code></pre>
+<p>But doesn't verifying <em>all those checksums</em> take a long time?  And don't you already do this when you do a <code>zpool scrub</code>?  Good point!  Wouldn't it be nice to only test those files which ZFS tells us have changed (if you trust ZFS)?  One way of doing that would be to keep an index of file changes, but again ZFS already does this for us.  Fortunately <code>httm</code> can help us:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% httm --num versions ~&#x2F;program&#x2F;httm&#x2F;*
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;Cargo.lock&quot; : 3 Versions available.
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;Cargo.toml&quot; : 4 Versions available.
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;LICENSE&quot; : 1 Version available.
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;README.md&quot; : 2 Versions available.
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;httm.1&quot; : 3 Versions available.
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;packaging&quot; : 1 Version available.
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;scripts&quot; : 1 Version available.
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;src&quot; : 6 Versions available.
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;target&quot; : 1 Version available
+</code></pre>
+<p>Of course, this is really great for determining, at a glace, &quot;Wow these files in <code>/etc</code> are seeing lot's of churn.  I have more questions...&quot;.  But what I really want, right now, is files with a single version available but which have been around long enough to have at least one snapshot available, <code>httm</code> has you covered:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% httm --num-versions=single-with-snap ~&#x2F;program&#x2F;httm&#x2F;*
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;LICENSE&quot;
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;packaging&quot;
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;scripts&quot;
+&quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;target&quot;
+</code></pre>
+<p>Regarding our original problem, we might rewrite our <code>dano</code> script to verify only those files with modifications that ZFS detected:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% find &#x2F;tank&#x2F;Media -type f | httm --num-versions=single-with-snap | dano --test
+</code></pre>
+<p>Available in <code>httm</code> version 0.15.2.</p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>

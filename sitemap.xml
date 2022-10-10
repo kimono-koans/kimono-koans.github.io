@@ -19,6 +19,10 @@
         <loc>/contact/</loc>
     </url>
     <url>
+        <loc>/dano/</loc>
+        <lastmod>2022-10-10</lastmod>
+    </url>
+    <url>
         <loc>/git/</loc>
         <lastmod>2022-05-07</lastmod>
     </url>
@@ -28,6 +32,9 @@
     </url>
     <url>
         <loc>/page/1/</loc>
+    </url>
+    <url>
+        <loc>/page/2/</loc>
     </url>
     <url>
         <loc>/tags/</loc>
@@ -49,6 +56,9 @@
     </url>
     <url>
         <loc>/tags/packaging/</loc>
+    </url>
+    <url>
+        <loc>/tags/rsync/</loc>
     </url>
     <url>
         <loc>/tags/snap/</loc>
