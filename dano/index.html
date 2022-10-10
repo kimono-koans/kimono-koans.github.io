@@ -106,7 +106,7 @@
     
 
 
-</header><p>One thing ZFS doesn't do (and thank goodness it doesn't?), it doesn't detect out-of-band changes to files.  If a program has the permissions to modify a file, ZFS happily modifies that file.  But, for some files (and for the truly paranoid), we may want to keep additional metadata about file integrity.  For instance, FLAC files keep checksums of its music streams. Another program I wrote, <code>dano</code>, provides a way to do the same for all FFMPEG compatible media streams.</p>
+</header><p>One thing ZFS doesn't do (and thank goodness it doesn't?), it doesn't detect out-of-band changes to files.  If a program has the permissions to modify a file, ZFS happily modifies that file.  But, for some files (and for the truly paranoid), we may want to keep additional metadata about file integrity.  For instance, FLAC files keep checksums of its music streams. A program I wrote, <code>dano</code>, provides a way to do the same for all FFMPEG compatible media streams.</p>
 <p>And perhaps you want to read back and verify such media bitstreams occasionally as one might in a <code>zpool scrub</code>, of course <code>dano</code> lets you do that too:</p>
 <pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% find &#x2F;tank&#x2F;Media -type f | dano --test
 </code></pre>
