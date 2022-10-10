@@ -118,7 +118,7 @@
 <p>And perhaps you want to read back and verify such media bitstreams occasionally as one might in a <code>zpool scrub</code>, of course <code>dano</code> lets you do that too:</p>
 <pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% find &#x2F;tank&#x2F;Media -type f | dano --test
 </code></pre>
-<p>But doesn't verifying <em>all those checksums</em> take a long time?  And don't you already do this when you do a <code>zpool scrub</code>?  Good point!  Wouldn't it be nice to only test those files which ZFS tells us have changed (if you trust ZFS)?  One way of doing that would be to keep an index of file changes, but again ZFS already does this for us.  Fortunately <a href="https://github.com/kimono-koans/httm">httm</a> can help us:</p>
+<p>But doesn't verifying <em>all those checksums</em> take a long time?  And don't you already do this when you do a <code>zpool scrub</code>?  Good point!  Wouldn't it be nice to only test those files which ZFS tells us have changed (if you trust ZFS)?  Is it wrong/sleazy to not verify these checksums if we know the underlying bits haven't changed?  Maybe httm can help us be a little sleazy:</p>
 <pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% httm --num versions ~&#x2F;program&#x2F;httm&#x2F;*
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;Cargo.lock&quot; : 3 Versions available.
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;Cargo.toml&quot; : 4 Versions available.
@@ -138,7 +138,7 @@
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;target&quot;
 </code></pre>
 <p>So, then, we might rewrite our <code>dano</code> script to verify only those files with modifications that ZFS detected:</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% find &#x2F;tank&#x2F;Media -type f | httm --num-versions=single-with-snap | dano --test
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% find &#x2F;tank&#x2F;Media -type f | httm --num-versions=multiple | dano --test
 </code></pre>
 <p>Available in <code>httm</code> version <a href="https://github.com/kimono-koans/httm/releases/tag/0.15.2">0.15.2</a>.</p>
 
