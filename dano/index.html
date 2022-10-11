@@ -119,7 +119,7 @@
 <pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% find &#x2F;tank&#x2F;Media -type f | dano --test
 </code></pre>
 <p>But doesn't verifying <em>all those checksums</em> take a long time?  And don't you already do this when you do a <code>zpool scrub</code>?  Good point!  Wouldn't it be nice to only test those files which ZFS tells us have changed (if you trust ZFS)?  Is it wrong/sleazy to not verify these checksums if we know the underlying bits haven't changed?  Maybe <a href="https://github.com/kimono-koans/httm">httm</a> can help us be a little sleazy:</p>
-<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% httm --num versions ~&#x2F;program&#x2F;httm&#x2F;*
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% httm --num-versions ~&#x2F;program&#x2F;httm&#x2F;*
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;Cargo.lock&quot; : 3 Versions available.
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;Cargo.toml&quot; : 4 Versions available.
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;LICENSE&quot; : 1 Version available.
@@ -130,14 +130,14 @@
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;src&quot; : 6 Versions available.
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;target&quot; : 1 Version available
 </code></pre>
-<p>Of course, this is really great for determining, at a glace, &quot;Wow, some of these files in <code>/etc</code> are seeing lot's of churn.  I have more questions...&quot;.  But what I really want, right now, is files with a single version available but which have been around long enough to have at least one snapshot available, <code>httm</code> has you covered:</p>
+<p>Of course, this is really great for determining, at a glace, &quot;Wow, some of these files in <code>/etc</code> are seeing lot's of churn.  I have more questions...&quot;.  But maybe what I really want, right now, is files with a single version available but which have been around long enough to have at least one snapshot available, <code>httm</code> has you covered:</p>
 <pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% httm --num-versions=single-with-snap ~&#x2F;program&#x2F;httm&#x2F;*
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;LICENSE&quot;
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;packaging&quot;
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;scripts&quot;
 &quot;&#x2F;srv&#x2F;program&#x2F;httm&#x2F;target&quot;
 </code></pre>
-<p>So, then, we might rewrite our <code>dano</code> script to verify only those files with modifications that ZFS detected:</p>
+<p>And we might now also rewrite our little <code>dano</code> script to verify only those files with multiple versions that ZFS detected:</p>
 <pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">% find &#x2F;tank&#x2F;Media -type f | httm --num-versions=multiple | dano --test
 </code></pre>
 <p>Available in <code>httm</code> version <a href="https://github.com/kimono-koans/httm/releases/tag/0.15.2">0.15.2</a>.</p>

@@ -18,7 +18,7 @@
 &lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% find &amp;#x2F;tank&amp;#x2F;Media -type f | dano --test
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;But doesn&#x27;t verifying &lt;em&gt;all those checksums&lt;&#x2F;em&gt; take a long time?  And don&#x27;t you already do this when you do a &lt;code&gt;zpool scrub&lt;&#x2F;code&gt;?  Good point!  Wouldn&#x27;t it be nice to only test those files which ZFS tells us have changed (if you trust ZFS)?  Is it wrong&#x2F;sleazy to not verify these checksums if we know the underlying bits haven&#x27;t changed?  Maybe &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; can help us be a little sleazy:&lt;&#x2F;p&gt;
-&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% httm --num versions ~&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;*
+&lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% httm --num-versions ~&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;*
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;Cargo.lock&amp;quot; : 3 Versions available.
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;Cargo.toml&amp;quot; : 4 Versions available.
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;LICENSE&amp;quot; : 1 Version available.
@@ -29,14 +29,14 @@
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;src&amp;quot; : 6 Versions available.
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;target&amp;quot; : 1 Version available
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Of course, this is really great for determining, at a glace, &amp;quot;Wow, some of these files in &lt;code&gt;&#x2F;etc&lt;&#x2F;code&gt; are seeing lot&#x27;s of churn.  I have more questions...&amp;quot;.  But what I really want, right now, is files with a single version available but which have been around long enough to have at least one snapshot available, &lt;code&gt;httm&lt;&#x2F;code&gt; has you covered:&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, this is really great for determining, at a glace, &amp;quot;Wow, some of these files in &lt;code&gt;&#x2F;etc&lt;&#x2F;code&gt; are seeing lot&#x27;s of churn.  I have more questions...&amp;quot;.  But maybe what I really want, right now, is files with a single version available but which have been around long enough to have at least one snapshot available, &lt;code&gt;httm&lt;&#x2F;code&gt; has you covered:&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% httm --num-versions=single-with-snap ~&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;*
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;LICENSE&amp;quot;
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;packaging&amp;quot;
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;scripts&amp;quot;
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;target&amp;quot;
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;So, then, we might rewrite our &lt;code&gt;dano&lt;&#x2F;code&gt; script to verify only those files with modifications that ZFS detected:&lt;&#x2F;p&gt;
+&lt;p&gt;And we might now also rewrite our little &lt;code&gt;dano&lt;&#x2F;code&gt; script to verify only those files with multiple versions that ZFS detected:&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% find &amp;#x2F;tank&amp;#x2F;Media -type f | httm --num-versions=multiple | dano --test
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;Available in &lt;code&gt;httm&lt;&#x2F;code&gt; version &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;releases&#x2F;tag&#x2F;0.15.2&quot;&gt;0.15.2&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
