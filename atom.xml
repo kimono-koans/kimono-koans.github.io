@@ -17,11 +17,7 @@
 &lt;p&gt;And perhaps you want to read back and verify such media bitstreams occasionally as one might in a &lt;code&gt;zpool scrub&lt;&#x2F;code&gt;, of course &lt;code&gt;dano&lt;&#x2F;code&gt; lets you do that too:&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% find &amp;#x2F;tank&amp;#x2F;Media -type f | dano --test
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-<<<<<<< HEAD
 &lt;p&gt;But doesn&#x27;t verifying &lt;em&gt;all those checksums&lt;&#x2F;em&gt; take a long time?  And don&#x27;t you already do this when you do a &lt;code&gt;zpool scrub&lt;&#x2F;code&gt;?  Good point!  Wouldn&#x27;t it be nice to only test those files which ZFS tells us have changed (if you trust ZFS)?  Is it wrong&#x2F;sleazy to not verify these checksums if we know the underlying bits haven&#x27;t changed?  Maybe &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; can help us be a little sleazy:&lt;&#x2F;p&gt;
-=======
-&lt;p&gt;But doesn&#x27;t verifying &lt;em&gt;all those checksums&lt;&#x2F;em&gt; take a long time?  And don&#x27;t you already do this when you do a &lt;code&gt;zpool scrub&lt;&#x2F;code&gt;?  Good point!  Wouldn&#x27;t it be nice to only test those files which ZFS tells us have changed (if you trust ZFS)?  Is it wrong&#x2F;sleazy to not verify these checksums if we know the underlying bits haven&#x27;t changed?  Maybe httm can help us be a little sleazy:&lt;&#x2F;p&gt;
->>>>>>> 21894a983b752a09c0699e0f9bbf727a01a12ffc
 &lt;pre data-lang=&quot;bash&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;% httm --num versions ~&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;*
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;Cargo.lock&amp;quot; : 3 Versions available.
 &amp;quot;&amp;#x2F;srv&amp;#x2F;program&amp;#x2F;httm&amp;#x2F;Cargo.toml&amp;quot; : 4 Versions available.
