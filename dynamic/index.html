@@ -114,25 +114,41 @@
 <p>See, for example:</p>
 <pre><code>#!&#x2F;bin&#x2F;bash
 function ounce_of_prevention {
-    for a in &quot;$@&quot;; do
-    # check whether to take snap - do we have a snap of the live file already?
-    if [[ -f &quot;$a&quot; ]] &amp;&amp; [[ -z &quot;$(httm -l &quot;$a&quot;)&quot; || &quot;$a&quot; -nt &quot;$(httm -l $a)&quot; ]]; then
-        # httm will dynamically determine the location of 
-        # the file&#x27;s ZFS dataset and snapshot that mount
-        sudo httm --snap &quot;$a&quot; &gt; &#x2F;dev&#x2F;null
-    fi
+    for a in &quot;$ALL_ARGS&quot;; do
+        # is the argument a file?
+        if [[ -f &quot;$a&quot; ]]; then
+            LIVE_FILE=&quot;$a&quot;
+        else
+            continue
+        fi
+
+        # get last snap version of the live file?
+        LAST_SNAP=&quot;$(httm -l &quot;$LIVE_FILE&quot;)&quot;
+
+        # check whether to take snap - do we have a snap of the live file already?
+        # 1) if empty, live file does not have a snapshot, then take snap, or
+        # 2) if live file is newer than last snap, then take snap
+        # 3) if live file is older than last snap (it could happen?), then take snap
+        if [[ -z &quot;$LAST_SNAP&quot; || &quot;$LIVE_FILE&quot; -nt &quot;$LAST_SNAP&quot; || &quot;$LIVE_FILE&quot; -ot &quot;$LAST_SNAP&quot; ]]; then
+            # httm will dynamically determine the location of
+            # the file&#x27;s ZFS dataset and snapshot that mount
+            sudo httm --snap &quot;$a&quot; &gt; &#x2F;dev&#x2F;null
+        fi
     done
 }
 
-ounce_of_prevention
-# used `nano` instead of `vim` or `emacs` to avoid a holy war
-nano &quot;$@&quot;
+ALL_ARGS=&quot;$@&quot;
+ounce_of_prevention &amp;
+# used `nano` instead of `vim` or `emacs` to avoid a unholy war
+nano &quot;$ALL_ARGS&quot;
 </code></pre>
 <p>First, we check whether we even need to take a snapshot:</p>
+<p>First, we check whether we even need to take a snapshot:</p>
 <ol>
-<li>The 1st condition checks whether an argument is a file.</li>
-<li>The command <code>httm -l $a</code> requests the last snapshot for the file, so ... the 2nd condition checks whether that file has a snapshot, and,</li>
-<li>The 3rd condition checks whether the live file is newer than the last snapshot version.</li>
+<li>The 0th condition checks whether an argument is a file.</li>
+<li>The command httm -l $a requests the last snapshot for the file, allowing you to test the 1st condition, which checks whether that file has a snapshot, and,</li>
+<li>The 2nd condition checks whether the live file is newer than the last snapshot version.</li>
+<li>The 3rd condition checks whether the live file is older than the last snapshot version.</li>
 </ol>
 <p>Next, <code>httm</code> makes certain that it doesn't matter whether you are editing <code>~/.zshrc</code> or <code>/etc/samba/smb.conf</code>.  <code>httm</code> dynamically determines and snapshots the appropriate mount (before you modify/screw up the file!).</p>
 <p>Now, one will have to also set up a bash alias (<code>alias nano=nano-with-prevention</code>), and a sudoers policy (<code>kimono ALL=(ALL) NOPASSWD: /usr/bin/httm --snap</code>), which allows these types of dynamic snapshots, but this pattern does seem to work pretty well.</p>
