@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Imagine You&#x27;re a Goofball: Dynamic Preventative ZFS Snapshots - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono koans&#x27; blog! Imagine You&#x27;re a Goofball: Dynamic Preventative ZFS Snapshots "/><meta name="keywords" content="programming, misc., httm, ZFS, snapshots, recovery" />
+    <meta property="og:title" content="kimono koans&#x27; blog! -&nbsp;Imagine You&#x27;re a Goofball: Dynamic Preventative ZFS Snapshots" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="&#x2F;dynamic&#x2F;"/><meta property="og:description" content="kimono koans&#x27; blog!"/>
+    <link rel="preload" href="/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/style.css?h=f8c7bc50801cb0dd9da65fd930c01ca7fb7efd801345957f21cba38c367faec8">
+    <link rel="stylesheet" href="/color/pink.css?h=7b272a1d22c0969cbedbdae17a3b26ae82fc8d1eb0368ac5ab527ee02f81a9c8">
+<link rel="alternate" type="application/atom+xml" title="kimono koans&#x27; blog! RSS" href="/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono-koans
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        /about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        /contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        /about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        /contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="&#x2F;dynamic&#x2F;">Imagine You&#x27;re a Goofball: Dynamic Preventative ZFS Snapshots</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2022.10.19
+                [Updated: 2022.10.19]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="/categories/programming/">programming</a>,
+            <a href="/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="/tags/httm/">httm</a>
+        
+    #<a href="/tags/zfs/">ZFS</a>
+        
+    #<a href="/tags/snapshots/">snapshots</a>
+        
+    #<a href="/tags/recovery/">recovery</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p>On <a href="https://news.ycombinator.com/item?id=33162259">Hacker News</a>, there is an article about how NILFS seems to &quot;take&quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there.  And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).</p>
+<p>But perhaps like our mother's said &quot;an ounce of prevention is worth a pound of cure&quot;?  Why not just take a snapshot before you do something silly?  With <a href="https://github.com/kimono-koans/httm">httm</a>, one can now take these sorts of dynamic snapshots. </p>
+<p>Let me reiterate -- one can take a snapshot without needing to specify a dataset or snapshot name. Just feed <code>httm</code> a filename and <code>httm</code> will figure out the rest.</p>
+<p>See, for example:</p>
+<pre><code>#!&#x2F;bin&#x2F;bash
+function ounce_of_prevention {
+    for a in &quot;$@&quot;; do
+    # check whether to take snap - do we have a snap of the live file already?
+    if [[ -f &quot;$a&quot; ]] &amp;&amp; [[ -z &quot;$(httm -l &quot;$a&quot;)&quot; || &quot;$a&quot; -nt &quot;$(httm -l $a)&quot; ]]; then
+        # httm will dynamically determine the location of 
+        # the file&#x27;s ZFS dataset and snapshot that mount
+        sudo httm --snap &quot;$a&quot; &gt; &#x2F;dev&#x2F;null
+    fi
+    done
+}
+
+ounce_of_prevention
+# used `nano` instead of `vim` or `emacs` to avoid a holy war
+nano &quot;$@&quot;
+</code></pre>
+<p>First, we check whether we even need to take a snapshot:</p>
+<ol>
+<li>The 1st condition checks whether an argument is a file.</li>
+<li>The command <code>httm -l $a</code> requests the last snapshot for the file, so ... the 2nd condition checks whether that file has a snapshot, and,</li>
+<li>The 3rd condition checks whether the live file is newer than the last snapshot version.</li>
+</ol>
+<p>Next, <code>httm</code> makes certain that it doesn't matter whether you are editing <code>~/.zshrc</code> or <code>/etc/samba/smb.conf</code>.  <code>httm</code> dynamically determines and snapshots the appropriate mount (before you modify/screw up the file!).</p>
+<p>Now, one will have to also set up a bash alias (<code>alias nano=nano-with-prevention</code>), and a sudoers policy (<code>kimono ALL=(ALL) NOPASSWD: /usr/bin/httm --snap</code>), which allows these types of dynamic snapshots, but this pattern does seem to work pretty well.</p>
+<p>Does anyone else have any other fancy dynamic snapshot tricks I could add to my arsenal?</p>
+<p>The latest release of <a href="https://github.com/kimono-koans/httm">httm</a> is <a href="https://github.com/kimono-koans/httm/releases/tag/0.16.0">0.16.0</a>. </p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>
