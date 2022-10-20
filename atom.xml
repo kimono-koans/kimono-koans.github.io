@@ -48,6 +48,7 @@ ounce_of_prevention &amp;quot;$@&amp;quot;
 &amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;nano &amp;quot;$@&amp;quot;
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;First, we check whether we even need to take a snapshot:&lt;&#x2F;p&gt;
+&lt;p&gt;First, we check whether we even need to take a snapshot:&lt;&#x2F;p&gt;
 &lt;ol&gt;
 &lt;li&gt;The 0th condition checks whether an argument is a file.&lt;&#x2F;li&gt;
 &lt;li&gt;The command &lt;code&gt;httm -l $LIVE_FILE&lt;&#x2F;code&gt; requests the last snapshot for the file, allowing you to test the 1st condition, which checks whether that file has a snapshot, and,&lt;&#x2F;li&gt;
