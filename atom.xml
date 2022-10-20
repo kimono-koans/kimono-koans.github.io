@@ -5,39 +5,53 @@
 	<link href="/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="/"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
-	<updated>2022-10-19T00:00:00+00:00</updated>
+	<updated>2022-10-20T00:00:00+00:00</updated>
 	<id>/atom.xml</id>
 	<entry xml:lang="en">
 		<title>Imagine You&#x27;re a Goofball: Dynamic Preventative ZFS Snapshots</title>
 		<published>2022-10-19T00:00:00+00:00</published>
-		<updated>2022-10-19T00:00:00+00:00</updated>
+		<updated>2022-10-20T00:00:00+00:00</updated>
 		<link rel="alternate" href="/dynamic/" type="text/html"/>
 		<id>/dynamic/</id>
 		<content type="html">&lt;p&gt;On &lt;a href=&quot;https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=33162259&quot;&gt;Hacker News&lt;&#x2F;a&gt;, there is an article about how NILFS seems to &amp;quot;take&amp;quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there.  And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).&lt;&#x2F;p&gt;
-&lt;p&gt;But perhaps like our mother&#x27;s said &amp;quot;an ounce of prevention is worth a pound of cure&amp;quot;?  Why not just take a snapshot before you do something silly?  With &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt;, one can now take these sorts of dynamic snapshots. &lt;&#x2F;p&gt;
-&lt;p&gt;Let me reiterate -- one can take a snapshot without needing to specify a dataset or snapshot name. Just feed &lt;code&gt;httm&lt;&#x2F;code&gt; a filename and &lt;code&gt;httm&lt;&#x2F;code&gt; will figure out the rest.&lt;&#x2F;p&gt;
+&lt;p&gt;But perhaps like our mother&#x27;s said &amp;quot;an ounce of prevention is worth a pound of cure&amp;quot;?  Why not just take a snapshot before you do something silly?  With &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt;, one can now take these sorts of no mental overhead, non-periodic dynamic snapshots, which can &lt;em&gt;complement&lt;&#x2F;em&gt; your current periodic snapshot scheme.&lt;&#x2F;p&gt;
+&lt;p&gt;Let me reiterate -- one can and &lt;em&gt;should be able to&lt;&#x2F;em&gt; take a snapshot without needing to specify a dataset or snapshot name. Just feed &lt;code&gt;httm&lt;&#x2F;code&gt; a filename and &lt;code&gt;httm&lt;&#x2F;code&gt; will figure out the rest.&lt;&#x2F;p&gt;
 &lt;p&gt;See, for example:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;#!&amp;#x2F;bin&amp;#x2F;bash
 function ounce_of_prevention {
-    for a in &amp;quot;$@&amp;quot;; do
-    # check whether to take snap - do we have a snap of the live file already?
-    if [[ -f &amp;quot;$a&amp;quot; ]] &amp;amp;&amp;amp; [[ -z &amp;quot;$(httm -l &amp;quot;$a&amp;quot;)&amp;quot; || &amp;quot;$a&amp;quot; -nt &amp;quot;$(httm -l $a)&amp;quot; ]]; then
-        # httm will dynamically determine the location of 
-        # the file&amp;#x27;s ZFS dataset and snapshot that mount
-        sudo httm --snap &amp;quot;$a&amp;quot; &amp;gt; &amp;#x2F;dev&amp;#x2F;null
-    fi
+    for a; do
+        # is the argument a file?
+        if [[ -f &amp;quot;$a&amp;quot; ]]; then
+            local LIVE_FILE=&amp;quot;$a&amp;quot;
+        else
+            continue
+        fi
+
+        # get last snap version of the live file?
+        local LAST_SNAP=&amp;quot;$(httm -l &amp;quot;$LIVE_FILE&amp;quot;)&amp;quot;
+
+        # check whether to take snap - do we have a snap of the live file already?
+        # 1) if empty, live file does not have a snapshot, then take snap, or
+        # 2) if live file is not the same as the last snap, then take snap
+        if [[ -z &amp;quot;$LAST_SNAP&amp;quot; ]] || \
+           [[ ! -z &amp;quot;$LAST_SNAP&amp;quot; &amp;amp;&amp;amp; &amp;quot;$(stat -c %Y &amp;quot;$LIVE_FILE&amp;quot;)&amp;quot; -ne &amp;quot;$(stat -c %Y &amp;quot;$LAST_SNAP&amp;quot;)&amp;quot; ]]
+        then
+            # httm will dynamically determine the location of
+            # the file&amp;#x27;s ZFS dataset and snapshot that mount
+            sudo httm --snap &amp;quot;$LIVE_FILE&amp;quot; &amp;gt; &amp;#x2F;dev&amp;#x2F;null &amp;amp;
+        fi
     done
 }
 
-ounce_of_prevention
-# used `nano` instead of `vim` or `emacs` to avoid a holy war
-nano &amp;quot;$@&amp;quot;
+ounce_of_prevention &amp;quot;$@&amp;quot;
+# expressly used `nano` instead of `vim` or `emacs` to avoid a unholy war
+&amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;nano &amp;quot;$@&amp;quot;
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;First, we check whether we even need to take a snapshot:&lt;&#x2F;p&gt;
 &lt;ol&gt;
-&lt;li&gt;The 1st condition checks whether an argument is a file.&lt;&#x2F;li&gt;
-&lt;li&gt;The command &lt;code&gt;httm -l $a&lt;&#x2F;code&gt; requests the last snapshot for the file, so ... the 2nd condition checks whether that file has a snapshot, and,&lt;&#x2F;li&gt;
-&lt;li&gt;The 3rd condition checks whether the live file is newer than the last snapshot version.&lt;&#x2F;li&gt;
+&lt;li&gt;The 0th condition checks whether an argument is a file.&lt;&#x2F;li&gt;
+&lt;li&gt;The command &lt;code&gt;httm -l $LIVE_FILE&lt;&#x2F;code&gt; requests the last snapshot for the file, allowing you to test the 1st condition, which checks whether that file has a snapshot, and,&lt;&#x2F;li&gt;
+&lt;li&gt;The 2nd condition checks whether the live file is not the same as the last snapshot version.&lt;&#x2F;li&gt;
 &lt;&#x2F;ol&gt;
 &lt;p&gt;Next, &lt;code&gt;httm&lt;&#x2F;code&gt; makes certain that it doesn&#x27;t matter whether you are editing &lt;code&gt;~&#x2F;.zshrc&lt;&#x2F;code&gt; or &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt;.  &lt;code&gt;httm&lt;&#x2F;code&gt; dynamically determines and snapshots the appropriate mount (before you modify&#x2F;screw up the file!).&lt;&#x2F;p&gt;
 &lt;p&gt;Now, one will have to also set up a bash alias (&lt;code&gt;alias nano=nano-with-prevention&lt;&#x2F;code&gt;), and a sudoers policy (&lt;code&gt;kimono ALL=(ALL) NOPASSWD: &#x2F;usr&#x2F;bin&#x2F;httm --snap&lt;&#x2F;code&gt;), which allows these types of dynamic snapshots, but this pattern does seem to work pretty well.&lt;&#x2F;p&gt;

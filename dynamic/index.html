@@ -78,7 +78,7 @@
             
     <div class="post-meta">
         <span class="post-date">2022.10.19
-                [Updated: 2022.10.19]
+                [Updated: 2022.10.20]
                 </span>
 
         <span class="post-author"></span>
@@ -109,30 +109,44 @@
 
 
 </header><p>On <a href="https://news.ycombinator.com/item?id=33162259">Hacker News</a>, there is an article about how NILFS seems to &quot;take&quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there.  And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).</p>
-<p>But perhaps like our mother's said &quot;an ounce of prevention is worth a pound of cure&quot;?  Why not just take a snapshot before you do something silly?  With <a href="https://github.com/kimono-koans/httm">httm</a>, one can now take these sorts of dynamic snapshots. </p>
-<p>Let me reiterate -- one can take a snapshot without needing to specify a dataset or snapshot name. Just feed <code>httm</code> a filename and <code>httm</code> will figure out the rest.</p>
+<p>But perhaps like our mother's said &quot;an ounce of prevention is worth a pound of cure&quot;?  Why not just take a snapshot before you do something silly?  With <a href="https://github.com/kimono-koans/httm">httm</a>, one can now take these sorts of no mental overhead, non-periodic dynamic snapshots, which can <em>complement</em> your current periodic snapshot scheme.</p>
+<p>Let me reiterate -- one can and <em>should be able to</em> take a snapshot without needing to specify a dataset or snapshot name. Just feed <code>httm</code> a filename and <code>httm</code> will figure out the rest.</p>
 <p>See, for example:</p>
 <pre><code>#!&#x2F;bin&#x2F;bash
 function ounce_of_prevention {
-    for a in &quot;$@&quot;; do
-    # check whether to take snap - do we have a snap of the live file already?
-    if [[ -f &quot;$a&quot; ]] &amp;&amp; [[ -z &quot;$(httm -l &quot;$a&quot;)&quot; || &quot;$a&quot; -nt &quot;$(httm -l $a)&quot; ]]; then
-        # httm will dynamically determine the location of 
-        # the file&#x27;s ZFS dataset and snapshot that mount
-        sudo httm --snap &quot;$a&quot; &gt; &#x2F;dev&#x2F;null
-    fi
+    for a; do
+        # is the argument a file?
+        if [[ -f &quot;$a&quot; ]]; then
+            local LIVE_FILE=&quot;$a&quot;
+        else
+            continue
+        fi
+
+        # get last snap version of the live file?
+        local LAST_SNAP=&quot;$(httm -l &quot;$LIVE_FILE&quot;)&quot;
+
+        # check whether to take snap - do we have a snap of the live file already?
+        # 1) if empty, live file does not have a snapshot, then take snap, or
+        # 2) if live file is not the same as the last snap, then take snap
+        if [[ -z &quot;$LAST_SNAP&quot; ]] || \
+           [[ ! -z &quot;$LAST_SNAP&quot; &amp;&amp; &quot;$(stat -c %Y &quot;$LIVE_FILE&quot;)&quot; -ne &quot;$(stat -c %Y &quot;$LAST_SNAP&quot;)&quot; ]]
+        then
+            # httm will dynamically determine the location of
+            # the file&#x27;s ZFS dataset and snapshot that mount
+            sudo httm --snap &quot;$LIVE_FILE&quot; &gt; &#x2F;dev&#x2F;null &amp;
+        fi
     done
 }
 
-ounce_of_prevention
-# used `nano` instead of `vim` or `emacs` to avoid a holy war
-nano &quot;$@&quot;
+ounce_of_prevention &quot;$@&quot;
+# expressly used `nano` instead of `vim` or `emacs` to avoid a unholy war
+&#x2F;usr&#x2F;bin&#x2F;nano &quot;$@&quot;
 </code></pre>
 <p>First, we check whether we even need to take a snapshot:</p>
 <ol>
-<li>The 1st condition checks whether an argument is a file.</li>
-<li>The command <code>httm -l $a</code> requests the last snapshot for the file, so ... the 2nd condition checks whether that file has a snapshot, and,</li>
-<li>The 3rd condition checks whether the live file is newer than the last snapshot version.</li>
+<li>The 0th condition checks whether an argument is a file.</li>
+<li>The command <code>httm -l $LIVE_FILE</code> requests the last snapshot for the file, allowing you to test the 1st condition, which checks whether that file has a snapshot, and,</li>
+<li>The 2nd condition checks whether the live file is not the same as the last snapshot version.</li>
 </ol>
 <p>Next, <code>httm</code> makes certain that it doesn't matter whether you are editing <code>~/.zshrc</code> or <code>/etc/samba/smb.conf</code>.  <code>httm</code> dynamically determines and snapshots the appropriate mount (before you modify/screw up the file!).</p>
 <p>Now, one will have to also set up a bash alias (<code>alias nano=nano-with-prevention</code>), and a sudoers policy (<code>kimono ALL=(ALL) NOPASSWD: /usr/bin/httm --snap</code>), which allows these types of dynamic snapshots, but this pattern does seem to work pretty well.</p>
