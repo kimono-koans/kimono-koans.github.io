@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Ounce (codenamed &#x27;dime-bag&#x27;): Dynamic File-Level ZFS Snapshots - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono koans&#x27; blog! Ounce (codenamed &#x27;dime-bag&#x27;): Dynamic File-Level ZFS Snapshots "/><meta name="keywords" content="programming, misc., httm, ZFS, snapshots, recovery" />
+    <meta property="og:title" content="kimono koans&#x27; blog! -&nbsp;Ounce (codenamed &#x27;dime-bag&#x27;): Dynamic File-Level ZFS Snapshots" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="&#x2F;ounce&#x2F;"/><meta property="og:description" content="kimono koans&#x27; blog!"/>
+    <link rel="preload" href="/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/style.css?h=f8c7bc50801cb0dd9da65fd930c01ca7fb7efd801345957f21cba38c367faec8">
+    <link rel="stylesheet" href="/color/pink.css?h=7b272a1d22c0969cbedbdae17a3b26ae82fc8d1eb0368ac5ab527ee02f81a9c8">
+<link rel="alternate" type="application/atom+xml" title="kimono koans&#x27; blog! RSS" href="/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono-koans
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        /about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        /contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        /about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        /contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="&#x2F;ounce&#x2F;">Ounce (codenamed &#x27;dime-bag&#x27;): Dynamic File-Level ZFS Snapshots</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2022.10.21
+                [Updated: 2022.10.21]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="/categories/programming/">programming</a>,
+            <a href="/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="/tags/httm/">httm</a>
+        
+    #<a href="/tags/zfs/">ZFS</a>
+        
+    #<a href="/tags/snapshots/">snapshots</a>
+        
+    #<a href="/tags/recovery/">recovery</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.zsh">ounce</a> (codenamed &quot;dime-bag&quot;, and f/k/a &quot;darrell&quot;) is a wrapper script for <a href="https://github.com/kimono-koans/httm">httm</a> which give you no mental overhead, non-periodic dynamic snapshots.</p>
+<p>On <a href="https://news.ycombinator.com/item?id=33162259">Hacker News</a>, there was an article about how NILFS seems to &quot;take&quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there.  And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).</p>
+<p>But perhaps like my boy Ben Franklin (or was it my mother, or Ben Franklin's mother?) said &quot;an ounce of prevention is worth a pound of cure&quot;?  Why not just take a snapshot before you do something silly?</p>
+<p>For awhile, one has been able to just feed <code>httm</code> file names and have it figure out which dataset those files resided on.  Like so:</p>
+<pre><code>➜  printf &quot;&#x2F;var&#x2F;log&#x2F;syslog\n&#x2F;etc&#x2F;passwd\n&quot; | sudo httm --snap
+httm took a snapshot named: rpool&#x2F;var&#x2F;log@snap_2022-10-21-08:57:04_httmSnapFileMount
+httm took a snapshot named: rpool@snap_2022-10-21-08:57:04_httmSnapFileMount
+</code></pre>
+<p>But I don't know about you, I don't usually feed file names into a pipe before I type <code>Name of $EDITOR redacted to prevent flame war</code> or <code>rm</code>?</p>
+<p>When I type:</p>
+<pre><code># nano used here to frustrate just you
+➜  nano &#x2F;etc&#x2F;samba&#x2F;smb.conf
+</code></pre>
+<p>If there is not a snapshot that matches the live version, I would like my computer to snapshot <code>/etc/samba/smb.conf</code> before I do something stupid.  <code>ounce</code> does this for me and now for you.</p>
+<pre><code># why do you hate nano so much?
+➜  ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf
+</code></pre>
+<p><code>ounce</code> knows that it's smart and I'm dumb, and sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago and takes a snapshot before I edit the file again because it wants me to have snapshots of all my file changes.  You can check:</p>
+<pre><code>➜  httm &#x2F;etc&#x2F;samba&#x2F;smb.conf
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Tue Aug 09 16:46:14 2022  17.6 KiB  &quot;&#x2F;.zfs&#x2F;snapshot&#x2F;autosnap_2022-10-19_20:00:22_hourly&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+Fri Oct 21 09:11:17 2022  17.6 KiB  &quot;&#x2F;.zfs&#x2F;snapshot&#x2F;snap_2022-10-21-09:11:18_httmSnapFileMount&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Fri Oct 21 09:11:25 2022  17.6 KiB  &quot;&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+</code></pre>
+<p>For more fun, simply alias to the commands you make modifications with:</p>
+<pre><code># don&#x27;t get triggered but...
+alias nano=&quot;ounce nano&quot;
+alias rm=&quot;ounce rm&quot;
+</code></pre>
+<p>Now available in <code>httm</code> version <a href="https://github.com/kimono-koans/httm/releases/tag/0.16.1">0.16.1</a>.</p>
+<p>The latest release of <a href="https://github.com/kimono-koans/httm">httm</a> is <a href="https://github.com/kimono-koans/httm/releases/tag/0.16.1">0.16.1</a>. </p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>
