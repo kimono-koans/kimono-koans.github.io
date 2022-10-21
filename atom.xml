@@ -5,8 +5,48 @@
 	<link href="/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="/"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
-	<updated>2022-10-20T00:00:00+00:00</updated>
+	<updated>2022-10-21T00:00:00+00:00</updated>
 	<id>/atom.xml</id>
+	<entry xml:lang="en">
+		<title>ounce (codename: &#x27;dimebag&#x27;): Dynamic File-Level ZFS Snapshots</title>
+		<published>2022-10-21T00:00:00+00:00</published>
+		<updated>2022-10-21T00:00:00+00:00</updated>
+		<link rel="alternate" href="/ounce/" type="text/html"/>
+		<id>/ounce/</id>
+		<content type="html">&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.zsh&quot;&gt;ounce&lt;&#x2F;a&gt; (codenamed &amp;quot;dime-bag&amp;quot;, and f&#x2F;k&#x2F;a &amp;quot;darrell&amp;quot;) is a wrapper (a condom, if you will) script for &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; which give you no mental overhead, non-periodic dynamic snapshots.&lt;&#x2F;p&gt;
+&lt;p&gt;On &lt;a href=&quot;https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=33162259&quot;&gt;Hacker News&lt;&#x2F;a&gt;, there was an article about how NILFS seems to &amp;quot;take&amp;quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there.  And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).&lt;&#x2F;p&gt;
+&lt;p&gt;But perhaps like my boy Ben Franklin (or was it my mother, or Ben Franklin&#x27;s mother?) said &amp;quot;an ounce of prevention is worth a pound of cure&amp;quot;?  Why not just take a snapshot before you do something silly?&lt;&#x2F;p&gt;
+&lt;p&gt;For awhile, one has been able to just feed &lt;code&gt;httm&lt;&#x2F;code&gt; file names and have it figure out which dataset those files resided on.  Like so:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;➜  printf &amp;quot;&amp;#x2F;var&amp;#x2F;log&amp;#x2F;syslog\n&amp;#x2F;etc&amp;#x2F;passwd\n&amp;quot; | sudo httm --snap
+httm took a snapshot named: rpool&amp;#x2F;var&amp;#x2F;log@snap_2022-10-21-08:57:04_httmSnapFileMount
+httm took a snapshot named: rpool@snap_2022-10-21-08:57:04_httmSnapFileMount
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But I don&#x27;t know about you, I don&#x27;t usually feed file names into a pipe before I type &lt;code&gt;Name of $EDITOR redacted to prevent flame war&lt;&#x2F;code&gt; or &lt;code&gt;rm&lt;&#x2F;code&gt;?&lt;&#x2F;p&gt;
+&lt;p&gt;When I type:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;# nano used here to frustrate just you
+➜  nano &amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If there is not a snapshot that matches the live version, I would like my computer to snapshot &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; before I do something stupid.  &lt;code&gt;ounce&lt;&#x2F;code&gt; does this for me and now for you.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;# why do you hate nano so much?
+➜  ounce nano &amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, and sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago and takes a snapshot before I edit the file again because it wants me to have snapshots of all my file changes.  You can check:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;➜  httm &amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Tue Aug 09 16:46:14 2022  17.6 KiB  &amp;quot;&amp;#x2F;.zfs&amp;#x2F;snapshot&amp;#x2F;autosnap_2022-10-19_20:00:22_hourly&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+Fri Oct 21 09:11:17 2022  17.6 KiB  &amp;quot;&amp;#x2F;.zfs&amp;#x2F;snapshot&amp;#x2F;snap_2022-10-21-09:11:18_httmSnapFileMount&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Fri Oct 21 09:11:25 2022  17.6 KiB  &amp;quot;&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;For more fun, simply alias to the commands you make modifications with:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;# don&amp;#x27;t get triggered but...
+alias nano=&amp;quot;ounce nano&amp;quot;
+alias rm=&amp;quot;ounce rm&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now available in &lt;code&gt;httm&lt;&#x2F;code&gt; version &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;releases&#x2F;tag&#x2F;0.16.1&quot;&gt;0.16.1&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</content>
+	</entry>
 	<entry xml:lang="en">
 		<title>Imagine You&#x27;re a Goofball: Dynamic Preventative ZFS Snapshots</title>
 		<published>2022-10-19T00:00:00+00:00</published>
@@ -47,7 +87,6 @@ ounce_of_prevention &amp;quot;$@&amp;quot;
 # expressly used `nano` instead of `vim` or `emacs` to avoid a unholy war
 &amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;nano &amp;quot;$@&amp;quot;
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;First, we check whether we even need to take a snapshot:&lt;&#x2F;p&gt;
 &lt;p&gt;First, we check whether we even need to take a snapshot:&lt;&#x2F;p&gt;
 &lt;ol&gt;
 &lt;li&gt;The 0th condition checks whether an argument is a file.&lt;&#x2F;li&gt;
