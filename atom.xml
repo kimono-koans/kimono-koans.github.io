@@ -5,15 +5,15 @@
 	<link href="/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="/"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
-	<updated>2022-10-21T00:00:00+00:00</updated>
+	<updated>2022-10-23T00:00:00+00:00</updated>
 	<id>/atom.xml</id>
 	<entry xml:lang="en">
 		<title>ounce (codename: &#x27;dimebag&#x27;): Dynamic File-Level ZFS Snapshots</title>
 		<published>2022-10-21T00:00:00+00:00</published>
-		<updated>2022-10-21T00:00:00+00:00</updated>
+		<updated>2022-10-23T00:00:00+00:00</updated>
 		<link rel="alternate" href="/ounce/" type="text/html"/>
 		<id>/ounce/</id>
-		<content type="html">&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.zsh&quot;&gt;ounce&lt;&#x2F;a&gt; (codenamed &amp;quot;dime-bag&amp;quot;, and f&#x2F;k&#x2F;a &amp;quot;darrell&amp;quot;) is a wrapper (a condom, if you will) script for &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; which give you no mental overhead, non-periodic dynamic snapshots.&lt;&#x2F;p&gt;
+		<content type="html">&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.zsh&quot;&gt;ounce&lt;&#x2F;a&gt; (codename: &amp;quot;dimebag&amp;quot;) is a wrapper (a condom, if you will) script for &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; which give you no mental overhead, non-periodic dynamic snapshots.&lt;&#x2F;p&gt;
 &lt;p&gt;On &lt;a href=&quot;https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=33162259&quot;&gt;Hacker News&lt;&#x2F;a&gt;, there was an article about how NILFS seems to &amp;quot;take&amp;quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there.  And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).&lt;&#x2F;p&gt;
 &lt;p&gt;But perhaps like my boy Ben Franklin (or was it my mother, or Ben Franklin&#x27;s mother?) said &amp;quot;an ounce of prevention is worth a pound of cure&amp;quot;?  Why not just take a snapshot before you do something silly?&lt;&#x2F;p&gt;
 &lt;p&gt;For awhile, one has been able to just feed &lt;code&gt;httm&lt;&#x2F;code&gt; file names and have it figure out which dataset those files resided on.  Like so:&lt;&#x2F;p&gt;
