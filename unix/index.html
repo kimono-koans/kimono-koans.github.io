@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>New ways to make ZFS&#x2F;btrfs snapshots UNIX-y (again?) - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono koans&#x27; blog! New ways to make ZFS&#x2F;btrfs snapshots UNIX-y (again?) "/><meta name="keywords" content="programming, misc., httm, ZFS, snapshots, recovery" />
+    <meta property="og:title" content="kimono koans&#x27; blog! -&nbsp;New ways to make ZFS&#x2F;btrfs snapshots UNIX-y (again?)" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="&#x2F;unix&#x2F;"/><meta property="og:description" content="kimono koans&#x27; blog!"/>
+    <link rel="preload" href="/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/style.css?h=f8c7bc50801cb0dd9da65fd930c01ca7fb7efd801345957f21cba38c367faec8">
+    <link rel="stylesheet" href="/color/pink.css?h=7b272a1d22c0969cbedbdae17a3b26ae82fc8d1eb0368ac5ab527ee02f81a9c8">
+<link rel="alternate" type="application/atom+xml" title="kimono koans&#x27; blog! RSS" href="/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono-koans
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        /about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        /contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        /about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        /contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="&#x2F;unix&#x2F;">New ways to make ZFS&#x2F;btrfs snapshots UNIX-y (again?)</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2022.10.31
+                [Updated: 2022.10.31]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="/categories/programming/">programming</a>,
+            <a href="/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="/tags/httm/">httm</a>
+        
+    #<a href="/tags/zfs/">ZFS</a>
+        
+    #<a href="/tags/snapshots/">snapshots</a>
+        
+    #<a href="/tags/recovery/">recovery</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p>One thing I didn't understand when I started using ZFS is why there wasn't a standard periodic snapshot tool packaged with the filesystem.  Given the triumph of engineering that ZFS is, and the good taste shown in the design of the <code>zfs</code> and <code>zpool</code> utilities, it was hard for me to understand why a standard set of snapshot scripts wasn't included everywhere ZFS was used.</p>
+<p>One can only guess at a few reasons why.  Maybe the ZFS developers simply wanted a thousand flowers to bloom.  They didn't want to impose their strict idea of what a periodic snapshot tool should look like.  Maybe they were simply too busy shipping an OS, and they didn't really know, at the time, how snapshots would be used by their consumers.  Perhaps significantly, ZFS was not a &quot;desktop&quot; filesystem until only recently.  Apple missed their opportunity (at eternal glory!).  Ubuntu is now the first mainstream OS most will encounter with ZFS on root.</p>
+<p>Of course, not including standard scripts has probably had some positive results.  Through trial and error, I/we have created or found snapshot, pruning, replication tools, etc., with which I am/we are comfortable.  An ecosystem was allowed to develop in the absence of strict direction.  An ecosystem that developed good tools for one, or a set of jobs, rather than all or too many.</p>
+<p>But I think it has had some negative results, as well.  Some very beautiful UNIX-y abstractions have been allowed to languish -- many of us have loads of snapshots, and many of us seem to never use them, except perhaps when we do the occasional rollback, or go hunting for an older version of a file.</p>
+<p>Of course, ZFS loves that &quot;most things are a file&quot; for certain operations:</p>
+<pre><code>zfs send rpool&#x2F;scratch@autosnap_2022-10-31_17:01:20_hourly | gzip &gt; &#x2F;srv&#x2F;tmp&#x2F;scratch.gz
+</code></pre>
+<p>But it seems the ZFS/btrfs communities still haven't wrapped their collective heads around the idea that snapshot datasets can be useful everywhere, especially at the file (read: not dataset) level.  This reason why Jim Salter's <code>findoid</code> was such a revelation for me, and a huge inspiration for <code>httm</code>, as it was the first tool I saw which made an attempt to deal with snapshots on a file level.</p>
+<p><code>httm</code> attempts to take that very broad idea to its logical conclusion.  See:</p>
+<p><a href="https://asciinema.org/a/529608"><img src="https://asciinema.org/a/529608.svg" alt="asciicast" /></a></p>
+<p>Of course, <code>httm</code> does lots of neat stuff, on its own, I won't describe here.  If your interested in the specifics of <code>httm</code>, please take a look at the <a href="https://github.com/kimono-koans/httm/blob/master/README.md">README</a>.  I could spend all day (okay, maybe an hour) talking about the things <code>httm</code> does simply by itself.  But what is of most interest is to me is the ways it <em>could be used</em>.  And I've tried to spark some curiosity by showing the very UNIX-y ways I use <code>httm</code>, see for instance <a href="https://github.com/kimono-koans/httm/blob/master/README.md#example-usage">to create <code>tar</code> and <code>git</code> archives</a>.  However, shell snippets are just proofs of concept.  What people like me need are fully working scripts/models of how <code>httm</code> could be used to do new and interesting and UNIX-y things.</p>
+<p>So -- the following are two fully formed (that is, at the limits of my <code>bash</code> script abilities!) examples of how you might use <code>httm</code> to create other new and interesting tools:</p>
+<p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> (codename: &quot;dimebag&quot;) is a wrapper script for httm which give you no mental overhead, non-periodic dynamic snapshots.</p>
+<p>When I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias 'nano'='ounce nano'</code>), <code>ounce</code> knows that it's smart and I'm dumb, and it sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago and it takes a snapshot before I edit the file again because it wants me to have snapshots of all my file changes.</p>
+<p>Of course, we can check:</p>
+<pre><code>➜ httm &#x2F;etc&#x2F;samba&#x2F;smb.conf
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Tue Aug 09 16:46:14 2022  17.6 KiB  &quot;&#x2F;.zfs&#x2F;snapshot&#x2F;autosnap_2022-10-19_20:00:22_hourly&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+Fri Oct 21 09:11:17 2022  17.6 KiB  &quot;&#x2F;.zfs&#x2F;snapshot&#x2F;snap_2022-10-21-09:11:18_ounceSnapFileMount&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Fri Oct 21 09:11:25 2022  17.6 KiB  &quot;&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+</code></pre>
+<p><a href="https://github.com/kimono-koans/httm/tree/master/scripts/bowie.bash">bowie</a> is a wrapper script for <a href="https://github.com/kimono-koans/httm">httm</a> which quickly displays the difference (with colors) between unique snapshot versions and the live file.</p>
+<p>A search, in the default, last change mode:</p>
+<pre><code>➜ bowie `which bowie`
+&#x2F;usr&#x2F;bin&#x2F;bowie
+__
+Files &#x2F;.zfs&#x2F;snapshot&#x2F;snap_2022-10-31-08:34:09_ounceSnapFileMount&#x2F;usr&#x2F;bin&#x2F;bowie and &#x2F;usr&#x2F;bin&#x2F;bowie differ
+69c69
+&lt;		while read line; do
+---
+&gt;		while read -r line; do
+</code></pre>
+<p>Each script contains has more options and features than can be described here.  I'm interested in your thoughts on what new options to add, or other potential scripts ideas.  But I'm even <em>more interested</em> in <em>your scripts</em>, and what new features you'd like me to add to <code>httm</code> to make new scripts possible/better.</p>
+<p><code>ounce</code> and <code>bowie</code> are available in <code>httm</code> version <a href="https://github.com/kimono-koans/httm/releases/tag/0.16.7">0.16.7</a>.</p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>
