@@ -108,7 +108,7 @@
     
 
 
-</header><p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.zsh">ounce</a> (codename: &quot;dimebag&quot;) is a wrapper (a condom, if you will) script for <a href="https://github.com/kimono-koans/httm">httm</a> which give you no mental overhead, non-periodic dynamic snapshots.</p>
+</header><p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.zsh">ounce</a> (codename: &quot;dimebag&quot;) is a wrapper script for <a href="https://github.com/kimono-koans/httm">httm</a> which give you no mental overhead, non-periodic dynamic snapshots.</p>
 <p>On <a href="https://news.ycombinator.com/item?id=33162259">Hacker News</a>, there was an article about how NILFS seems to &quot;take&quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there.  And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).</p>
 <p>But perhaps like my boy Ben Franklin (or was it my mother, or Ben Franklin's mother?) said &quot;an ounce of prevention is worth a pound of cure&quot;?  Why not just take a snapshot before you do something silly?</p>
 <p>For awhile, one has been able to just feed <code>httm</code> file names and have it figure out which dataset those files resided on.  Like so:</p>
