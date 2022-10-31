@@ -45,6 +45,9 @@
         <loc>/page/2/</loc>
     </url>
     <url>
+        <loc>/page/3/</loc>
+    </url>
+    <url>
         <loc>/tags/</loc>
     </url>
     <url>
@@ -94,6 +97,10 @@
     </url>
     <url>
         <loc>/tags/zfs/</loc>
+    </url>
+    <url>
+        <loc>/unix/</loc>
+        <lastmod>2022-10-31</lastmod>
     </url>
     <url>
         <loc>/user-expectations/</loc>
