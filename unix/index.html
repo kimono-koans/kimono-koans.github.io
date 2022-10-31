@@ -115,7 +115,11 @@
 <p>Of course, ZFS loves that &quot;most things are a file&quot; for certain operations:</p>
 <pre><code>zfs send rpool&#x2F;scratch@autosnap_2022-10-31_17:01:20_hourly | gzip &gt; &#x2F;srv&#x2F;tmp&#x2F;scratch.gz
 </code></pre>
+<<<<<<< HEAD
 <p>But it seems the ZFS/btrfs communities still haven't wrapped their collective heads around the idea that snapshot datasets can be useful everywhere, especially at the file (read: not dataset) level.  This reason why Jim Salter's <code>findoid</code> was such a revelation for me, and a huge inspiration for <code>httm</code>, as it was the first tool I saw which made an attempt to deal with snapshots on a file level.</p>
+=======
+<p>But it seems the btrfs/ZFS communities still haven't wrapped their its collective heads around the idea that snapshot datasets can be useful everywhere, especially at the file (read: not dataset) level.  This reason why Jim Salter's <code>findoid</code> was such a revelation for me, and a huge inspiration for <code>httm</code>, as it was the first tool I saw which made an attempt to deal with snapshots on a file level.</p>
+>>>>>>> 620da992a786a93ebace6351f4218e17421ea535
 <p><code>httm</code> attempts to take that very broad idea to its logical conclusion.  See:</p>
 <p><a href="https://asciinema.org/a/529608"><img src="https://asciinema.org/a/529608.svg" alt="asciicast" /></a></p>
 <p>Of course, <code>httm</code> does lots of neat stuff, on its own, I won't describe here.  If your interested in the specifics of <code>httm</code>, please take a look at the <a href="https://github.com/kimono-koans/httm/blob/master/README.md">README</a>.  I could spend all day (okay, maybe an hour) talking about the things <code>httm</code> does simply by itself.  But what is of most interest is to me is the ways it <em>could be used</em>.  And I've tried to spark some curiosity by showing the very UNIX-y ways I use <code>httm</code>, see for instance <a href="https://github.com/kimono-koans/httm/blob/master/README.md#example-usage">to create <code>tar</code> and <code>git</code> archives</a>.  However, shell snippets are just proofs of concept.  What people like me need are fully working scripts/models of how <code>httm</code> could be used to do new and interesting and UNIX-y things.</p>
