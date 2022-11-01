@@ -47,7 +47,7 @@ Files &amp;#x2F;.zfs&amp;#x2F;snapshot&amp;#x2F;snap_2022-10-31-08:34:09_ounceSn
 ---
 &amp;gt;		while read -r line; do
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Each script contains has more options and features than can be described here.  I&#x27;m interested in your thoughts on what new options to add, or other potential scripts ideas.  But I&#x27;m even &lt;em&gt;more interested&lt;&#x2F;em&gt; in &lt;em&gt;your scripts&lt;&#x2F;em&gt;, and what new features you&#x27;d like me to add to &lt;code&gt;httm&lt;&#x2F;code&gt; to make new scripts possible&#x2F;better.&lt;&#x2F;p&gt;
+&lt;p&gt;Each script contains more options and features than can be described here.  I&#x27;m interested in your thoughts on what new options to add, or other potential scripts ideas.  But I&#x27;m even &lt;em&gt;more interested&lt;&#x2F;em&gt; in &lt;em&gt;your scripts&lt;&#x2F;em&gt;, and what new features you&#x27;d like me to add to &lt;code&gt;httm&lt;&#x2F;code&gt; to make new scripts possible&#x2F;better.&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;code&gt;ounce&lt;&#x2F;code&gt; and &lt;code&gt;bowie&lt;&#x2F;code&gt; are available in &lt;code&gt;httm&lt;&#x2F;code&gt; version &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;releases&#x2F;tag&#x2F;0.16.7&quot;&gt;0.16.7&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
 </content>
 	</entry>
