@@ -63,7 +63,7 @@ done
 &lt;p&gt;You may ask -- why?  Because, for me, it&#x27;s sometimes important to know that snapshot was triggered on a date and time certain.  Let&#x27;s discuss a few examples of triggers you might like to use for a snapshot.&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;before-a-system-upgrade&quot;&gt;Before a System Upgrade&lt;a class=&quot;zola-anchor&quot; href=&quot;#before-a-system-upgrade&quot; aria-label=&quot;Anchor link for: before-a-system-upgrade&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;One such trigger are an &lt;code&gt;apt update&lt;&#x2F;code&gt; and a kernel upgrade.   Here is how I do those.&lt;&#x2F;p&gt;
+&lt;p&gt;The first such triggers we should consider are snapshots upon &lt;code&gt;apt upgrade&lt;&#x2F;code&gt; and kernel upgrades.   Here is how I do those.&lt;&#x2F;p&gt;
 &lt;p&gt;First, you&#x27;ll need a snapshot script to execute (perhaps called &lt;code&gt;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt&lt;&#x2F;code&gt;):&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;DATE=&amp;quot;$( &amp;#x2F;bin&amp;#x2F;date +%F-%T )&amp;quot;
 zfs snapshot -r bpool@snap_&amp;quot;$DATE&amp;quot;_prepApt

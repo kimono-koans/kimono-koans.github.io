@@ -214,7 +214,7 @@ done
 <p>You may ask -- why?  Because, for me, it's sometimes important to know that snapshot was triggered on a date and time certain.  Let's discuss a few examples of triggers you might like to use for a snapshot.</p>
 <h3 id="before-a-system-upgrade">Before a System Upgrade<a class="zola-anchor" href="#before-a-system-upgrade" aria-label="Anchor link for: before-a-system-upgrade">§</a>
 </h3>
-<p>One such trigger are an <code>apt update</code> and a kernel upgrade.   Here is how I do those.</p>
+<p>The first such triggers we should consider are snapshots upon <code>apt upgrade</code> and kernel upgrades.   Here is how I do those.</p>
 <p>First, you'll need a snapshot script to execute (perhaps called <code>/usr/local/sbin/snapPrepApt</code>):</p>
 <pre><code>DATE=&quot;$( &#x2F;bin&#x2F;date +%F-%T )&quot;
 zfs snapshot -r bpool@snap_&quot;$DATE&quot;_prepApt
