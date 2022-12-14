@@ -184,8 +184,9 @@
 <h2 id="periodic-snapshots">Periodic Snapshots<a class="zola-anchor" href="#periodic-snapshots" aria-label="Anchor link for: periodic-snapshots">§</a>
 </h2>
 <p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention, <code>sanoid</code> and <code>syncoid</code> make it easy enough to do what needs to be done.</p>
-<p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be).  But what <code>sanoid</code> <em>is</em> is composable.  I have this feeling that the <code>sanoid</code> folks get asked to add features perhaps a little too often. When, in my mind, what makes <code>sanoid</code> great is that it doesn't force you into using its features.  It's simple.  It works.  It relies on you to compose it with your other the other Linux tools.  You just need to make it work for you.  I love this.</p>
-<p>For instance, suppose you want to sleep your NAS drives occasionally.  First, you'll need to check if any of the spinning rust drives are sleeping:</p>
+<p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be).  But what <code>sanoid</code> <em>is</em> is composable.  I have this feeling that the <code>sanoid</code> folks get asked to add features perhaps a little too often. When, in my mind, what makes <code>sanoid</code> great is that it doesn't force you into using its features.  It presents simple user interface.  It works.  It relies on you to compose it with your other the other Linux tools.  You just need to make it work for you.  I love this.</p>
+<p>For instance, suppose you want to sleep your NAS drives occasionally and not invoke <code>sanoid</code> when your drives are sleeping.</p>
+<p>First, you'll need to check if any of the spinning rust drives are sleeping:</p>
 <pre><code>find &#x2F;dev&#x2F;disk&#x2F;by-id&#x2F; -type l | \
 grep -v -e part -e wwn | \
 while read disk; do
