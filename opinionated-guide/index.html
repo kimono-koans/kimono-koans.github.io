@@ -222,16 +222,17 @@ zfs snapshot rpool@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot -r rpool&#x2F;ROOT@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot -r rpool&#x2F;USERDATA@snap_&quot;$DATE&quot;_prepApt
 </code></pre>
-<p>And you'll need to execute such a script before 'apt upgrade' from <code>/etc/apt/apt.conf.d</code>:</p>
+<p>And you'll need to execute such a script invoked before <code>apt upgrade</code> from <code>/etc/apt/apt.conf.d</code>:</p>
 <pre><code>&#x2F;&#x2F; Takes a snapshot of the system before package changes.
 DPkg::Pre-Invoke {&quot;[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true&quot;;};
 </code></pre>
-<p>And also when you update your kernel from /etc/kernel/preinst.d like so:</p>
+<p>And also you will want to make a snapshot each time you update your kernel from /etc/kernel/preinst.d like so:</p>
 <pre><code>[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true
 </code></pre>
 <h3 id="before-service-launch">Before Service Launch<a class="zola-anchor" href="#before-service-launch" aria-label="Anchor link for: before-service-launch">§</a>
 </h3>
-<p>And sometimes you will want to snapshot only when a service starts up or shuts down.  For instance perhaps you have a service with a database that needs to be cleanly shutdown so that state can be cleanly snapshot-ed.  Just add a little script to execute before or after start up via <code>systemctl edit</code>:</p>
+<p>And sometimes you will want to snapshot only when a service starts up or shuts down.  For instance perhaps you have a service with a database that needs to be cleanly shutdown so that its state can be cleanly snapshot-ed.</p>
+<p>Just add a little script to execute before or after start up via <code>systemctl edit</code>:</p>
 <pre><code>...
 [Service]
 ExecStartPre=&#x2F;bin&#x2F;bash -c &quot;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapDataService&quot;
@@ -239,7 +240,8 @@ ExecStartPre=&#x2F;bin&#x2F;bash -c &quot;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;sn
 </code></pre>
 <h3 id="on-network-mount">On Network Mount<a class="zola-anchor" href="#on-network-mount" aria-label="Anchor link for: on-network-mount">§</a>
 </h3>
-<p>Or maybe you want to execute a snapshot every time a network drive is mounted or unmounted.  So when you or a program deletes something over the network you have snapshot of the state just prior to mount or unmount.  Your <code>smb.conf</code> allows you to do this:</p>
+<p>Or maybe you want to execute a snapshot every time a network drive is mounted or unmounted.  So -- when you or a program deletes something over the network -- you have snapshot of the state just prior to mount or unmount.</p>
+<p>Your <code>smb.conf</code> allows you to execute scripts just like this:</p>
 <pre><code>...
 [TM Volume]
 path = &quot;&#x2F;srv&#x2F;timemachine&quot;
@@ -254,22 +256,24 @@ root postexec = &quot;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;TMpost&quot;
 </code></pre>
 <h3 id="watch-a-directory">Watch a Directory<a class="zola-anchor" href="#watch-a-directory" aria-label="Anchor link for: watch-a-directory">§</a>
 </h3>
-<p>Maybe you only want to snapshot a folder when new files are added.  <code>inotifywait</code> is a wonderful tool for that use case:</p>
+<p>Maybe you only want to snapshot a folder when new files are added.  <code>inotifywait</code> is a wonderful tool for just that use case:</p>
 <pre><code>inotifywait -m -e moved_to &quot;&#x2F;srv&#x2F;downloads&#x2F;&quot; | while read -r line; do
 	snapDownloads
 done
 </code></pre>
 <h3 id="cleanup">Cleanup<a class="zola-anchor" href="#cleanup" aria-label="Anchor link for: cleanup">§</a>
 </h3>
-<p>Now that you've made these snapshots, if you're anything like me, you <em>must</em> clean them up once they aren't needed anymore.  I highly suggest <a href="https://github.com/bahamas10/zfs-prune-snapshots">zfs-prune-snapshots</a> for this task.  Just run as a cron script daily to cleanup any triggered or dynamic snapshots that have outlived their usefulness:</p>
+<p>Now that you've made these snapshots, if you're anything like me, you <em>must</em> clean them up once they aren't needed anymore.  I highly suggest <a href="https://github.com/bahamas10/zfs-prune-snapshots">zfs-prune-snapshots</a> for this task.</p>
+<p>Just run as a cron script daily to cleanup any triggered or dynamic snapshots that have outlived their usefulness:</p>
 <pre><code>&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;zfs-prune-snapshots -s &#x27;_prepApt&#x27; 2w 2&gt;&amp;1 | logger -t sanoid
 </code></pre>
 <h2 id="dynamic-snapshots">Dynamic Snapshots<a class="zola-anchor" href="#dynamic-snapshots" aria-label="Anchor link for: dynamic-snapshots">§</a>
 </h2>
 <p>Dynamic Snapshots are a term I'll credit myself with at least popularizing.  Dynamic Snapshots are very similar to triggered snapshots, in fact I think it is appropriate to think of them as a breed of Triggered Snapshots.  The key difference I feel is how ad hoc a Dynamic Snapshot <em>feels</em>.</p>
 <p>I'll try to give a few examples.</p>
-<p>Imagine you're in a folder and you realize you're about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.</p>
-<p>All of these things you could do feel like leg work.  A Dynamic Snapshot shouldn't feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the $PWD and taking a snapshot immediately.  For instance, with <code>httm</code>, you might invoke a Dynamic Snapshot like so:</p>
+<p>Imagine -- you're in a folder and you realize you're about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.</p>
+<p>All of these things you could do, feel like leg work.  A Dynamic Snapshot shouldn't feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the $PWD and taking a snapshot immediately.</p>
+<p>For instance, with <code>httm</code>, you might invoke a Dynamic Snapshot like so:</p>
 <pre><code>➜ httm -S .
 httm took a snapshot named: rpool&#x2F;ROOT&#x2F;ubuntu_tiebek@snap_2022-12-14-12:31:41_httmSnapFileMount
 </code></pre>

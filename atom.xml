@@ -71,16 +71,17 @@ zfs snapshot rpool@snap_&amp;quot;$DATE&amp;quot;_prepApt
 zfs snapshot -r rpool&amp;#x2F;ROOT@snap_&amp;quot;$DATE&amp;quot;_prepApt
 zfs snapshot -r rpool&amp;#x2F;USERDATA@snap_&amp;quot;$DATE&amp;quot;_prepApt
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;And you&#x27;ll need to execute such a script before &#x27;apt upgrade&#x27; from &lt;code&gt;&#x2F;etc&#x2F;apt&#x2F;apt.conf.d&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;p&gt;And you&#x27;ll need to execute such a script invoked before &lt;code&gt;apt upgrade&lt;&#x2F;code&gt; from &lt;code&gt;&#x2F;etc&#x2F;apt&#x2F;apt.conf.d&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;&amp;#x2F;&amp;#x2F; Takes a snapshot of the system before package changes.
 DPkg::Pre-Invoke {&amp;quot;[ -x &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt ] &amp;amp;&amp;amp; &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt || true&amp;quot;;};
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;And also when you update your kernel from &#x2F;etc&#x2F;kernel&#x2F;preinst.d like so:&lt;&#x2F;p&gt;
+&lt;p&gt;And also you will want to make a snapshot each time you update your kernel from &#x2F;etc&#x2F;kernel&#x2F;preinst.d like so:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;[ -x &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt ] &amp;amp;&amp;amp; &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt || true
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;before-service-launch&quot;&gt;Before Service Launch&lt;a class=&quot;zola-anchor&quot; href=&quot;#before-service-launch&quot; aria-label=&quot;Anchor link for: before-service-launch&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;And sometimes you will want to snapshot only when a service starts up or shuts down.  For instance perhaps you have a service with a database that needs to be cleanly shutdown so that state can be cleanly snapshot-ed.  Just add a little script to execute before or after start up via &lt;code&gt;systemctl edit&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;p&gt;And sometimes you will want to snapshot only when a service starts up or shuts down.  For instance perhaps you have a service with a database that needs to be cleanly shutdown so that its state can be cleanly snapshot-ed.&lt;&#x2F;p&gt;
+&lt;p&gt;Just add a little script to execute before or after start up via &lt;code&gt;systemctl edit&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
 [Service]
 ExecStartPre=&amp;#x2F;bin&amp;#x2F;bash -c &amp;quot;&amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapDataService&amp;quot;
@@ -88,7 +89,8 @@ ExecStartPre=&amp;#x2F;bin&amp;#x2F;bash -c &amp;quot;&amp;#x2F;usr&amp;#x2F;loc
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;on-network-mount&quot;&gt;On Network Mount&lt;a class=&quot;zola-anchor&quot; href=&quot;#on-network-mount&quot; aria-label=&quot;Anchor link for: on-network-mount&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;Or maybe you want to execute a snapshot every time a network drive is mounted or unmounted.  So when you or a program deletes something over the network you have snapshot of the state just prior to mount or unmount.  Your &lt;code&gt;smb.conf&lt;&#x2F;code&gt; allows you to do this:&lt;&#x2F;p&gt;
+&lt;p&gt;Or maybe you want to execute a snapshot every time a network drive is mounted or unmounted.  So -- when you or a program deletes something over the network -- you have snapshot of the state just prior to mount or unmount.&lt;&#x2F;p&gt;
+&lt;p&gt;Your &lt;code&gt;smb.conf&lt;&#x2F;code&gt; allows you to execute scripts just like this:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
 [TM Volume]
 path = &amp;quot;&amp;#x2F;srv&amp;#x2F;timemachine&amp;quot;
@@ -103,22 +105,24 @@ root postexec = &amp;quot;&amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;TM
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;watch-a-directory&quot;&gt;Watch a Directory&lt;a class=&quot;zola-anchor&quot; href=&quot;#watch-a-directory&quot; aria-label=&quot;Anchor link for: watch-a-directory&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;Maybe you only want to snapshot a folder when new files are added.  &lt;code&gt;inotifywait&lt;&#x2F;code&gt; is a wonderful tool for that use case:&lt;&#x2F;p&gt;
+&lt;p&gt;Maybe you only want to snapshot a folder when new files are added.  &lt;code&gt;inotifywait&lt;&#x2F;code&gt; is a wonderful tool for just that use case:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;inotifywait -m -e moved_to &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;&amp;quot; | while read -r line; do
 	snapDownloads
 done
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;cleanup&quot;&gt;Cleanup&lt;a class=&quot;zola-anchor&quot; href=&quot;#cleanup&quot; aria-label=&quot;Anchor link for: cleanup&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;Now that you&#x27;ve made these snapshots, if you&#x27;re anything like me, you &lt;em&gt;must&lt;&#x2F;em&gt; clean them up once they aren&#x27;t needed anymore.  I highly suggest &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;bahamas10&#x2F;zfs-prune-snapshots&quot;&gt;zfs-prune-snapshots&lt;&#x2F;a&gt; for this task.  Just run as a cron script daily to cleanup any triggered or dynamic snapshots that have outlived their usefulness:&lt;&#x2F;p&gt;
+&lt;p&gt;Now that you&#x27;ve made these snapshots, if you&#x27;re anything like me, you &lt;em&gt;must&lt;&#x2F;em&gt; clean them up once they aren&#x27;t needed anymore.  I highly suggest &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;bahamas10&#x2F;zfs-prune-snapshots&quot;&gt;zfs-prune-snapshots&lt;&#x2F;a&gt; for this task.&lt;&#x2F;p&gt;
+&lt;p&gt;Just run as a cron script daily to cleanup any triggered or dynamic snapshots that have outlived their usefulness:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;&amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;zfs-prune-snapshots -s &amp;#x27;_prepApt&amp;#x27; 2w 2&amp;gt;&amp;amp;1 | logger -t sanoid
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h2 id=&quot;dynamic-snapshots&quot;&gt;Dynamic Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#dynamic-snapshots&quot; aria-label=&quot;Anchor link for: dynamic-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
 &lt;p&gt;Dynamic Snapshots are a term I&#x27;ll credit myself with at least popularizing.  Dynamic Snapshots are very similar to triggered snapshots, in fact I think it is appropriate to think of them as a breed of Triggered Snapshots.  The key difference I feel is how ad hoc a Dynamic Snapshot &lt;em&gt;feels&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
 &lt;p&gt;I&#x27;ll try to give a few examples.&lt;&#x2F;p&gt;
-&lt;p&gt;Imagine you&#x27;re in a folder and you realize you&#x27;re about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.&lt;&#x2F;p&gt;
-&lt;p&gt;All of these things you could do feel like leg work.  A Dynamic Snapshot shouldn&#x27;t feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the $PWD and taking a snapshot immediately.  For instance, with &lt;code&gt;httm&lt;&#x2F;code&gt;, you might invoke a Dynamic Snapshot like so:&lt;&#x2F;p&gt;
+&lt;p&gt;Imagine -- you&#x27;re in a folder and you realize you&#x27;re about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.&lt;&#x2F;p&gt;
+&lt;p&gt;All of these things you could do, feel like leg work.  A Dynamic Snapshot shouldn&#x27;t feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the $PWD and taking a snapshot immediately.&lt;&#x2F;p&gt;
+&lt;p&gt;For instance, with &lt;code&gt;httm&lt;&#x2F;code&gt;, you might invoke a Dynamic Snapshot like so:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;➜ httm -S .
 httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_tiebek@snap_2022-12-14-12:31:41_httmSnapFileMount
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
