@@ -164,14 +164,14 @@
 		</div>
 </div>
 
-</header><p>Too long ago, I was <a href="https://github.com/kimono-koans/httm/issues/11">asked by a user</a> of <a href="https://github.com/kimono-koans/httm">httm</a> to describe the way I (over)use snapshots, and, though I said I would explain, I never thought I had anything important enough to say about best practices.  However, since, increasingly I'm seeing posts to r/ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS, and though I can only share my knowledge regarding my perhaps very idiosyncratic snapshot setup, I thought maybe these opinions might be enough for those just starting out.</p>
+</header><p>Much too long ago, I was <a href="https://github.com/kimono-koans/httm/issues/11">asked by a user</a> of <a href="https://github.com/kimono-koans/httm">httm</a> to describe the way I (over)use snapshots, and, though I said I would explain, I never thought I had anything important enough to say about best practices.  However, since, increasingly I'm seeing posts to r/ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS, and though I can only share my opinions regarding my perhaps very idiosyncratic snapshot setup, I thought maybe these opinions might be enough for those just starting out.</p>
 <p>Of course, I will make some assumptions that may not apply to your setup.  This guide assumes you're using:</p>
 <ul>
 <li>ZFS for a data and a root pool</li>
 <li>On a small home NAS</li>
 <li>Running Ubuntu</li>
 </ul>
-<p>But I'm certain at least some of this advice will be useful even if you're on a different setup.  I'd prefer you know <em>how</em> I did something, so you know <em>how</em> you might solve your particular riddle.</p>
+<p>But I'm certain at least some of this advice will be useful even if you're on a different setup.</p>
 <p>I think an effective snapshot scheme as composed of possibly three types of snapshots:</p>
 <ol>
 <li>Periodic Snapshots</li>
@@ -180,8 +180,8 @@
 </ol>
 <h2 id="periodic-snapshots">Periodic Snapshots<a class="zola-anchor" href="#periodic-snapshots" aria-label="Anchor link for: periodic-snapshots">§</a>
 </h2>
-<p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention <code>sanoid</code> and <code>syncoid</code> make it easy enough to what needs to be done.</p>
-<p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be).  But what <code>sanoid</code> <em>is</em> is composable.  You need to make it work for you.</p>
+<p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention, <code>sanoid</code> and <code>syncoid</code> make it easy enough to do what needs to be done.</p>
+<p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be).  But what <code>sanoid</code> <em>is</em> is composable.  You just need to make it work for you.</p>
 <p>For instance, suppose you want to sleep your NAS drives occasionally.  Just set a condition not to run when any drives are sleeping.  First, check if the drives are sleeping:</p>
 <pre><code>find &#x2F;dev&#x2F;disk&#x2F;by-id&#x2F; -type l | \
 grep -v -e part -e wwn | \
@@ -198,7 +198,7 @@ done
 <p>I won't reproduce my entire personal <code>sanoid.conf</code> configuration/policy.  Suffice to say you will want to leave a few things <code>unmanaged</code>.  That's because periodic snapshots are just the base of any good snapshot scheme.</p>
 <pre><code>...
 [template_unmanaged]
-	    frequently = 0
+	frequently = 0
         hourly = 24
         daily = 7
         weekly = 4

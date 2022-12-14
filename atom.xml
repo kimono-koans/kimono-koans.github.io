@@ -13,14 +13,14 @@
 		<updated>2022-12-14T00:00:00+00:00</updated>
 		<link rel="alternate" href="/opinionated-guide/" type="text/html"/>
 		<id>/opinionated-guide/</id>
-		<content type="html">&lt;p&gt;Too long ago, I was &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;issues&#x2F;11&quot;&gt;asked by a user&lt;&#x2F;a&gt; of &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; to describe the way I (over)use snapshots, and, though I said I would explain, I never thought I had anything important enough to say about best practices.  However, since, increasingly I&#x27;m seeing posts to r&#x2F;ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS, and though I can only share my knowledge regarding my perhaps very idiosyncratic snapshot setup, I thought maybe these opinions might be enough for those just starting out.&lt;&#x2F;p&gt;
+		<content type="html">&lt;p&gt;Much too long ago, I was &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;issues&#x2F;11&quot;&gt;asked by a user&lt;&#x2F;a&gt; of &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; to describe the way I (over)use snapshots, and, though I said I would explain, I never thought I had anything important enough to say about best practices.  However, since, increasingly I&#x27;m seeing posts to r&#x2F;ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS, and though I can only share my opinions regarding my perhaps very idiosyncratic snapshot setup, I thought maybe these opinions might be enough for those just starting out.&lt;&#x2F;p&gt;
 &lt;p&gt;Of course, I will make some assumptions that may not apply to your setup.  This guide assumes you&#x27;re using:&lt;&#x2F;p&gt;
 &lt;ul&gt;
 &lt;li&gt;ZFS for a data and a root pool&lt;&#x2F;li&gt;
 &lt;li&gt;On a small home NAS&lt;&#x2F;li&gt;
 &lt;li&gt;Running Ubuntu&lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
-&lt;p&gt;But I&#x27;m certain at least some of this advice will be useful even if you&#x27;re on a different setup.  I&#x27;d prefer you know &lt;em&gt;how&lt;&#x2F;em&gt; I did something, so you know &lt;em&gt;how&lt;&#x2F;em&gt; you might solve your particular riddle.&lt;&#x2F;p&gt;
+&lt;p&gt;But I&#x27;m certain at least some of this advice will be useful even if you&#x27;re on a different setup.&lt;&#x2F;p&gt;
 &lt;p&gt;I think an effective snapshot scheme as composed of possibly three types of snapshots:&lt;&#x2F;p&gt;
 &lt;ol&gt;
 &lt;li&gt;Periodic Snapshots&lt;&#x2F;li&gt;
@@ -29,8 +29,8 @@
 &lt;&#x2F;ol&gt;
 &lt;h2 id=&quot;periodic-snapshots&quot;&gt;Periodic Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#periodic-snapshots&quot; aria-label=&quot;Anchor link for: periodic-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
-&lt;p&gt;Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;sanoid&lt;&#x2F;a&gt; as a periodic snapshot tool.  For those that don&#x27;t already know, &lt;code&gt;sanoid&lt;&#x2F;code&gt; describes itself as &amp;quot;a policy-driven snapshot management tool for ZFS filesystems&amp;quot;.  Although other tools exist and perhaps deserve mention &lt;code&gt;sanoid&lt;&#x2F;code&gt; and &lt;code&gt;syncoid&lt;&#x2F;code&gt; make it easy enough to what needs to be done.&lt;&#x2F;p&gt;
-&lt;p&gt;But note -- like any good tool -- &lt;code&gt;sanoid&lt;&#x2F;code&gt; isn&#x27;t a perfect fit for every use case (and shouldn&#x27;t be).  But what &lt;code&gt;sanoid&lt;&#x2F;code&gt; &lt;em&gt;is&lt;&#x2F;em&gt; is composable.  You need to make it work for you.&lt;&#x2F;p&gt;
+&lt;p&gt;Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;sanoid&lt;&#x2F;a&gt; as a periodic snapshot tool.  For those that don&#x27;t already know, &lt;code&gt;sanoid&lt;&#x2F;code&gt; describes itself as &amp;quot;a policy-driven snapshot management tool for ZFS filesystems&amp;quot;.  Although other tools exist and perhaps deserve mention, &lt;code&gt;sanoid&lt;&#x2F;code&gt; and &lt;code&gt;syncoid&lt;&#x2F;code&gt; make it easy enough to do what needs to be done.&lt;&#x2F;p&gt;
+&lt;p&gt;But note -- like any good tool -- &lt;code&gt;sanoid&lt;&#x2F;code&gt; isn&#x27;t a perfect fit for every use case (and shouldn&#x27;t be).  But what &lt;code&gt;sanoid&lt;&#x2F;code&gt; &lt;em&gt;is&lt;&#x2F;em&gt; is composable.  You just need to make it work for you.&lt;&#x2F;p&gt;
 &lt;p&gt;For instance, suppose you want to sleep your NAS drives occasionally.  Just set a condition not to run when any drives are sleeping.  First, check if the drives are sleeping:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;find &amp;#x2F;dev&amp;#x2F;disk&amp;#x2F;by-id&amp;#x2F; -type l | \
 grep -v -e part -e wwn | \
@@ -47,7 +47,7 @@ done
 &lt;p&gt;I won&#x27;t reproduce my entire personal &lt;code&gt;sanoid.conf&lt;&#x2F;code&gt; configuration&#x2F;policy.  Suffice to say you will want to leave a few things &lt;code&gt;unmanaged&lt;&#x2F;code&gt;.  That&#x27;s because periodic snapshots are just the base of any good snapshot scheme.&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
 [template_unmanaged]
-	    frequently = 0
+	frequently = 0
         hourly = 24
         daily = 7
         weekly = 4
