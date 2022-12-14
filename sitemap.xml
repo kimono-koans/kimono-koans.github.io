@@ -35,6 +35,10 @@
         <lastmod>2022-06-25</lastmod>
     </url>
     <url>
+        <loc>/opinionated-guide/</loc>
+        <lastmod>2022-12-14</lastmod>
+    </url>
+    <url>
         <loc>/ounce/</loc>
         <lastmod>2022-10-23</lastmod>
     </url>
@@ -88,6 +92,9 @@
     </url>
     <url>
         <loc>/tags/snap/</loc>
+    </url>
+    <url>
+        <loc>/tags/snaphots/</loc>
     </url>
     <url>
         <loc>/tags/snapshots/</loc>

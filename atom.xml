@@ -5,8 +5,138 @@
 	<link href="/atom.xml" rel="self" type="application/atom+xml"/>
   <link href="/"/>
 	<generator uri="https://www.getzola.org/">Zola</generator>
-	<updated>2022-10-31T00:00:00+00:00</updated>
+	<updated>2022-12-14T00:00:00+00:00</updated>
 	<id>/atom.xml</id>
+	<entry xml:lang="en">
+		<title>A Somewhat Opinionated Guide to ZFS Snapshots</title>
+		<published>2022-12-14T00:00:00+00:00</published>
+		<updated>2022-12-14T00:00:00+00:00</updated>
+		<link rel="alternate" href="/opinionated-guide/" type="text/html"/>
+		<id>/opinionated-guide/</id>
+		<content type="html">&lt;p&gt;Too long ago, I was &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;issues&#x2F;11&quot;&gt;asked by a user&lt;&#x2F;a&gt; of &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; to describe the way I (over)use snapshots, and, though I said I would explain, I never thought I had anything important enough to say about best practices.  However, since, increasingly I&#x27;m seeing posts to r&#x2F;ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS, and though I can only share my knowledge regarding my perhaps very idiosyncratic snapshot setup, I thought maybe these opinions might be enough for those just starting out.&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, I will make some assumptions that may not apply to your setup.  This guide assumes you&#x27;re using:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;ZFS for a data and a root pool&lt;&#x2F;li&gt;
+&lt;li&gt;On a small home NAS&lt;&#x2F;li&gt;
+&lt;li&gt;Running Ubuntu&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;But I&#x27;m certain at least some of this advice will be useful even if you&#x27;re on a different setup.  I&#x27;d prefer you know &lt;em&gt;how&lt;&#x2F;em&gt; I did something, so you know &lt;em&gt;how&lt;&#x2F;em&gt; you might solve your particular riddle.&lt;&#x2F;p&gt;
+&lt;p&gt;I think an effective snapshot scheme as composed of possibly three types of snapshots:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Periodic Snapshots&lt;&#x2F;li&gt;
+&lt;li&gt;Triggered Snapshots&lt;&#x2F;li&gt;
+&lt;li&gt;Dynamic Snapshots&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h2 id=&quot;periodic-snapshots&quot;&gt;Periodic Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#periodic-snapshots&quot; aria-label=&quot;Anchor link for: periodic-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;sanoid&lt;&#x2F;a&gt; as a periodic snapshot tool.  For those that don&#x27;t already know, &lt;code&gt;sanoid&lt;&#x2F;code&gt; describes itself as &amp;quot;a policy-driven snapshot management tool for ZFS filesystems&amp;quot;.  Although other tools exist and perhaps deserve mention &lt;code&gt;sanoid&lt;&#x2F;code&gt; and &lt;code&gt;syncoid&lt;&#x2F;code&gt; make it easy enough to what needs to be done.&lt;&#x2F;p&gt;
+&lt;p&gt;But note -- like any good tool -- &lt;code&gt;sanoid&lt;&#x2F;code&gt; isn&#x27;t a perfect fit for every use case (and shouldn&#x27;t be).  But what &lt;code&gt;sanoid&lt;&#x2F;code&gt; &lt;em&gt;is&lt;&#x2F;em&gt; is composable.  You need to make it work for you.&lt;&#x2F;p&gt;
+&lt;p&gt;For instance, suppose you want to sleep your NAS drives occasionally.  Just set a condition not to run when any drives are sleeping.  First, check if the drives are sleeping:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;find &amp;#x2F;dev&amp;#x2F;disk&amp;#x2F;by-id&amp;#x2F; -type l | \
+grep -v -e part -e wwn | \
+while read disk; do
+	if [[ $(lsblk -o rota &amp;quot;$disk&amp;quot; | grep -c &amp;quot;1&amp;quot;) -gt 0 ]]; then
+		smartctl -d sat --nocheck=standby &amp;quot;$disk&amp;quot;
+	fi
+done
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Next, set a condition whenever you invoke &lt;code&gt;sanoid&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;[[ $( &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;checkHDstatus | grep -i &amp;#x27;Device&amp;#x27; | &amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;grep -i -c &amp;#x27;STANDBY&amp;#x27; ) -gt 0 ]] || 
+&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --prune-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I won&#x27;t reproduce my entire personal &lt;code&gt;sanoid.conf&lt;&#x2F;code&gt; configuration&#x2F;policy.  Suffice to say you will want to leave a few things &lt;code&gt;unmanaged&lt;&#x2F;code&gt;.  That&#x27;s because periodic snapshots are just the base of any good snapshot scheme.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;...
+[template_unmanaged]
+	    frequently = 0
+        hourly = 24
+        daily = 7
+        weekly = 4
+        monthly = 6
+        yearly = 0
+        autosnap = no
+        autoprune = yes
+...
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;triggered-snapshots&quot;&gt;Triggered Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#triggered-snapshots&quot; aria-label=&quot;Anchor link for: triggered-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;Canonical&#x27;s &lt;code&gt;zsys&lt;&#x2F;code&gt; promised snapshots of every system update and seamless rollback on boot &lt;em&gt;as well as&lt;&#x2F;em&gt; periodic snapshots of significant directories.  It&#x27;s unfortunate &lt;code&gt;zsys&lt;&#x2F;code&gt; wasn&#x27;t ready for the Ubuntu 22.04 release.  There are many reasons I think that was, which I won&#x27;t rehash here, but suffice to say the basic premise is sound: &lt;em&gt;Periodic Snapshots are not enough&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;You may ask -- why?  Because, for me, it&#x27;s sometimes important to know that snapshot was triggered on a date and time certain.  Let&#x27;s discuss a few examples of triggers you might like to use for a snapshot.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;before-a-system-upgrade&quot;&gt;Before a System Upgrade&lt;a class=&quot;zola-anchor&quot; href=&quot;#before-a-system-upgrade&quot; aria-label=&quot;Anchor link for: before-a-system-upgrade&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;One such trigger are an &lt;code&gt;apt update&lt;&#x2F;code&gt; and a kernel upgrade.   Here is how I do those.&lt;&#x2F;p&gt;
+&lt;p&gt;First, you&#x27;ll need a snapshot script to execute (perhaps called &lt;code&gt;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt&lt;&#x2F;code&gt;):&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;DATE=&amp;quot;$( &amp;#x2F;bin&amp;#x2F;date +%F-%T )&amp;quot;
+zfs snapshot -r bpool@snap_&amp;quot;$DATE&amp;quot;_prepApt
+zfs snapshot rpool@snap_&amp;quot;$DATE&amp;quot;_prepApt
+zfs snapshot -r rpool&amp;#x2F;ROOT@snap_&amp;quot;$DATE&amp;quot;_prepApt
+zfs snapshot -r rpool&amp;#x2F;USERDATA@snap_&amp;quot;$DATE&amp;quot;_prepApt
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And you&#x27;ll need to execute such a script before &#x27;apt upgrade&#x27; from &lt;code&gt;&#x2F;etc&#x2F;apt&#x2F;apt.conf.d&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&amp;#x2F;&amp;#x2F; Takes a snapshot of the system before package changes.
+DPkg::Pre-Invoke {&amp;quot;[ -x &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt ] &amp;amp;&amp;amp; &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt || true&amp;quot;;};
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And also when you update your kernel from &#x2F;etc&#x2F;kernel&#x2F;preinst.d like so:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;#!&amp;#x2F;bin&amp;#x2F;sh
+[ -x &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt ] &amp;amp;&amp;amp; &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt || true
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;before-service-launch&quot;&gt;Before Service Launch&lt;a class=&quot;zola-anchor&quot; href=&quot;#before-service-launch&quot; aria-label=&quot;Anchor link for: before-service-launch&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;And sometimes you will want to snapshot only when a service starts up or shuts down.  For instance perhaps you have a service with a database that needs to be cleanly shutdown so that state can be cleanly snapshot-ed.  Just add a little script to execute before or after start up via &lt;code&gt;systemctl edit&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;...
+[Service]
+ExecStartPre=&amp;#x2F;bin&amp;#x2F;bash -c &amp;quot;&amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapDataService&amp;quot;
+...
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;on-network-mount&quot;&gt;On Network Mount&lt;a class=&quot;zola-anchor&quot; href=&quot;#on-network-mount&quot; aria-label=&quot;Anchor link for: on-network-mount&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;Or maybe you want to execute a snapshot every time a network drive is mounted or unmounted.  So when you or a program deletes something over the network you have snapshot of the state just prior to mount or unmount.  Your &lt;code&gt;smb.conf&lt;&#x2F;code&gt; allows you to this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;...
+[TM Volume]
+path = &amp;quot;&amp;#x2F;srv&amp;#x2F;timemachine&amp;quot;
+valid users = timemachine
+read only = no
+wide links = no
+create mask = 0740
+directory mask = 0750
+root preexec = &amp;quot;&amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;TMpre&amp;quot;
+root postexec = &amp;quot;&amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;TMpost&amp;quot;
+...
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;watch-a-directory&quot;&gt;Watch a Directory&lt;a class=&quot;zola-anchor&quot; href=&quot;#watch-a-directory&quot; aria-label=&quot;Anchor link for: watch-a-directory&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;Maybe you only want to snapshot a folder when new files are added.  &lt;code&gt;inotifywait&lt;&#x2F;code&gt; is a wonderful tool for that use case:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;inotifywait -m -e moved_to &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;&amp;quot; | while read -r line; do
+	snapDownloads
+done
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;cleanup&quot;&gt;Cleanup&lt;a class=&quot;zola-anchor&quot; href=&quot;#cleanup&quot; aria-label=&quot;Anchor link for: cleanup&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h3&gt;
+&lt;p&gt;Now that you&#x27;ve made these snapshots, if you&#x27;re anything like me, you &lt;em&gt;must&lt;&#x2F;em&gt; clean them up once they aren&#x27;t needed anymore.  I highly suggest &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;bahamas10&#x2F;zfs-prune-snapshots&quot;&gt;zfs-prune-snapshots&lt;&#x2F;a&gt; for this task.  Just run as a cron script daily to cleanup any triggered or dynamic snapshots that have outlived their usefulness:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;zfs-prune-snapshots -s &amp;#x27;_prepApt&amp;#x27; 2w 2&amp;gt;&amp;amp;1 | logger -t sanoid
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;dynamic-snapshots&quot;&gt;Dynamic Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#dynamic-snapshots&quot; aria-label=&quot;Anchor link for: dynamic-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;Dynamic Snapshots are a term I&#x27;ll credit myself with at least popularizing.  Dynamic Snapshots are very similar to triggered snapshots, in fact I think it is appropriate to think of them as a breed of Triggered Snapshots.  The key difference I feel is how ad hoc a Dynamic Snapshot &lt;em&gt;feels&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;ll try to give a few examples.&lt;&#x2F;p&gt;
+&lt;p&gt;Imagine you&#x27;re in a folder and you realize you&#x27;re about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.  All of these feel like leg work.  A Dynamic Snapshot shouldn&#x27;t feel like leg work.  A dynamic snapshot should just work, like so:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;➜ httm -S .
+httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_tiebek@snap_2022-12-14-12:31:41_httmSnapFileMount
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Another example -- ounce is a script that I wrote which wraps the target executable, traces its system calls, and executes snapshots &lt;em&gt;before&lt;&#x2F;em&gt; you do something silly.  So when I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually alias &#x27;nano&#x27;=&#x27;ounce nano&#x27;), ounce knows that it&#x27;s smart and I&#x27;m dumb, and it traces each file open call, and sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago, and, so it takes a snapshot before I edit the file again because it wants me to have snapshots of all my file changes, &lt;em&gt;before&lt;&#x2F;em&gt; I do something silly.&lt;&#x2F;p&gt;
+&lt;p&gt;We can check that this works via &lt;code&gt;httm&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;➜ httm &amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Tue Aug 09 16:46:14 2022  17.6 KiB  &amp;quot;&amp;#x2F;.zfs&amp;#x2F;snapshot&amp;#x2F;autosnap_2022-10-19_20:00:22_hourly&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+Fri Oct 21 09:11:17 2022  17.6 KiB  &amp;quot;&amp;#x2F;.zfs&amp;#x2F;snapshot&amp;#x2F;snap_2022-10-21-09:11:18_ounceSnapFileMount&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Fri Oct 21 09:11:25 2022  17.6 KiB  &amp;quot;&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;a class=&quot;zola-anchor&quot; href=&quot;#conclusion&quot; aria-label=&quot;Anchor link for: conclusion&quot;&gt;§&lt;&#x2F;a&gt;
+&lt;&#x2F;h2&gt;
+&lt;p&gt;Good luck with your future snapshot adventures!  I&#x27;d love to know your thoughts how you do it better&#x2F;more cleverly!&lt;&#x2F;p&gt;
+</content>
+	</entry>
 	<entry xml:lang="en">
 		<title>New ways to make ZFS&#x2F;btrfs snapshots UNIX-y (again?)</title>
 		<published>2022-10-31T00:00:00+00:00</published>
