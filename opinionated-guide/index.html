@@ -167,7 +167,7 @@
 
 </header><p>Much too long ago, I was <a href="https://github.com/kimono-koans/httm/issues/11">asked by a user</a> of <a href="https://github.com/kimono-koans/httm">httm</a> to describe the way I (over)use snapshots, and, though I said I would explain, I never thought I had anything important enough to say about best practices.</p>
 <p>However, since I'm increasingly seeing posts on r/ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS, and though I can only share my <em>opinions</em> regarding my perhaps <em>very idiosyncratic</em> snapshot setup, maybe these opinions could be helpful for those just starting out.</p>
-<p>Of course, this guide will make some assumptions that may not apply to your setup.  This guide assumes you're using:</p>
+<p>Of course, this Getting Started guide will make some assumptions that may not apply to your setup.  This guide assumes you're using:</p>
 <ul>
 <li>ZFS for a data and a root pool</li>
 <li>Running Ubuntu</li>
@@ -225,11 +225,11 @@ zfs snapshot rpool@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot -r rpool&#x2F;ROOT@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot -r rpool&#x2F;USERDATA@snap_&quot;$DATE&quot;_prepApt
 </code></pre>
-<p>Next, you'll need to execute such a script invoked before <code>apt upgrade</code> from <code>/etc/apt/apt.conf.d</code>:</p>
+<p>Next, you'll need to execute such a script invoked from <code>/etc/apt/apt.conf.d</code> before <code>apt upgrade</code> that looks similar to:</p>
 <pre><code>&#x2F;&#x2F; Takes a snapshot of the system before package changes.
 DPkg::Pre-Invoke {&quot;[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true&quot;;};
 </code></pre>
-<p>And you will also probably want to make a snapshot each time you update your kernel from <code>/etc/kernel/preinst.d</code> like so:</p>
+<p>And you will also probably want to execute a script invoked from <code>/etc/kernel/preinst.d</code> each time you update your kernel, that looks something like:</p>
 <pre><code>[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true
 </code></pre>
 <h3 id="before-service-launch">Before Service Launch<a class="zola-anchor" href="#before-service-launch" aria-label="Anchor link for: before-service-launch">§</a>

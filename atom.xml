@@ -15,7 +15,7 @@
 		<id>/opinionated-guide/</id>
 		<content type="html">&lt;p&gt;Much too long ago, I was &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;issues&#x2F;11&quot;&gt;asked by a user&lt;&#x2F;a&gt; of &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; to describe the way I (over)use snapshots, and, though I said I would explain, I never thought I had anything important enough to say about best practices.&lt;&#x2F;p&gt;
 &lt;p&gt;However, since I&#x27;m increasingly seeing posts on r&#x2F;ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS, and though I can only share my &lt;em&gt;opinions&lt;&#x2F;em&gt; regarding my perhaps &lt;em&gt;very idiosyncratic&lt;&#x2F;em&gt; snapshot setup, maybe these opinions could be helpful for those just starting out.&lt;&#x2F;p&gt;
-&lt;p&gt;Of course, this guide will make some assumptions that may not apply to your setup.  This guide assumes you&#x27;re using:&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, this Getting Started guide will make some assumptions that may not apply to your setup.  This guide assumes you&#x27;re using:&lt;&#x2F;p&gt;
 &lt;ul&gt;
 &lt;li&gt;ZFS for a data and a root pool&lt;&#x2F;li&gt;
 &lt;li&gt;Running Ubuntu&lt;&#x2F;li&gt;
@@ -73,11 +73,11 @@ zfs snapshot rpool@snap_&amp;quot;$DATE&amp;quot;_prepApt
 zfs snapshot -r rpool&amp;#x2F;ROOT@snap_&amp;quot;$DATE&amp;quot;_prepApt
 zfs snapshot -r rpool&amp;#x2F;USERDATA@snap_&amp;quot;$DATE&amp;quot;_prepApt
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Next, you&#x27;ll need to execute such a script invoked before &lt;code&gt;apt upgrade&lt;&#x2F;code&gt; from &lt;code&gt;&#x2F;etc&#x2F;apt&#x2F;apt.conf.d&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;p&gt;Next, you&#x27;ll need to execute such a script invoked from &lt;code&gt;&#x2F;etc&#x2F;apt&#x2F;apt.conf.d&lt;&#x2F;code&gt; before &lt;code&gt;apt upgrade&lt;&#x2F;code&gt; that looks similar to:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;&amp;#x2F;&amp;#x2F; Takes a snapshot of the system before package changes.
 DPkg::Pre-Invoke {&amp;quot;[ -x &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt ] &amp;amp;&amp;amp; &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt || true&amp;quot;;};
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;And you will also probably want to make a snapshot each time you update your kernel from &lt;code&gt;&#x2F;etc&#x2F;kernel&#x2F;preinst.d&lt;&#x2F;code&gt; like so:&lt;&#x2F;p&gt;
+&lt;p&gt;And you will also probably want to execute a script invoked from &lt;code&gt;&#x2F;etc&#x2F;kernel&#x2F;preinst.d&lt;&#x2F;code&gt; each time you update your kernel, that looks something like:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;[ -x &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt ] &amp;amp;&amp;amp; &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;snapPrepApt || true
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;before-service-launch&quot;&gt;Before Service Launch&lt;a class=&quot;zola-anchor&quot; href=&quot;#before-service-launch&quot; aria-label=&quot;Anchor link for: before-service-launch&quot;&gt;§&lt;&#x2F;a&gt;
