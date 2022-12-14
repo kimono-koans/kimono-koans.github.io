@@ -181,8 +181,8 @@
 <h2 id="periodic-snapshots">Periodic Snapshots<a class="zola-anchor" href="#periodic-snapshots" aria-label="Anchor link for: periodic-snapshots">§</a>
 </h2>
 <p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention, <code>sanoid</code> and <code>syncoid</code> make it easy enough to do what needs to be done.</p>
-<p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be).  But what <code>sanoid</code> <em>is</em> is composable.  You just need to make it work for you.</p>
-<p>For instance, suppose you want to sleep your NAS drives occasionally.  Just set a condition not to run when any drives are sleeping.  First, check if the drives are sleeping:</p>
+<p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be).  But what <code>sanoid</code> <em>is</em> is composable.  I have this feeling that <code>sanoid</code> folks get asked to add features perhaps too often when what makes <code>sanoid</code> great is that it doesn't force you into using its features.  It's simple.  It works.  It relies on you to compose it with your other the other Linux tools.  You just need to make it work for you.  I love this.</p>
+<p>For instance, suppose you want to sleep your NAS drives occasionally.  First, you'll check if the drives are sleeping:</p>
 <pre><code>find &#x2F;dev&#x2F;disk&#x2F;by-id&#x2F; -type l | \
 grep -v -e part -e wwn | \
 while read disk; do
@@ -191,8 +191,8 @@ while read disk; do
 	fi
 done
 </code></pre>
-<p>Next, set a condition whenever you invoke <code>sanoid</code>:</p>
-<pre><code>[[ $( &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;checkHDstatus | grep -i &#x27;Device&#x27; | &#x2F;usr&#x2F;bin&#x2F;grep -i -c &#x27;STANDBY&#x27; ) -gt 0 ]] || 
+<p>Next, check that condition whenever you invoke <code>sanoid</code>:</p>
+<pre><code>[[ $( &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;checkHDstatus | grep -i &#x27;Device&#x27; | &#x2F;usr&#x2F;bin&#x2F;grep -i -c &#x27;STANDBY&#x27; ) -gt 0 ]] || \
 &#x2F;usr&#x2F;sbin&#x2F;sanoid --prune-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;
 </code></pre>
 <p>I won't reproduce my entire personal <code>sanoid.conf</code> configuration/policy.  Suffice to say you will want to leave a few things <code>unmanaged</code>.  That's because periodic snapshots are just the base of any good snapshot scheme.</p>
@@ -227,8 +227,7 @@ zfs snapshot -r rpool&#x2F;USERDATA@snap_&quot;$DATE&quot;_prepApt
 DPkg::Pre-Invoke {&quot;[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true&quot;;};
 </code></pre>
 <p>And also when you update your kernel from /etc/kernel/preinst.d like so:</p>
-<pre><code>#!&#x2F;bin&#x2F;sh
-[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true
+<pre><code>[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true
 </code></pre>
 <h3 id="before-service-launch">Before Service Launch<a class="zola-anchor" href="#before-service-launch" aria-label="Anchor link for: before-service-launch">§</a>
 </h3>
