@@ -10,10 +10,16 @@
         <loc>/categories/</loc>
     </url>
     <url>
+        <loc>/categories/filesystems/</loc>
+    </url>
+    <url>
         <loc>/categories/misc/</loc>
     </url>
     <url>
         <loc>/categories/programming/</loc>
+    </url>
+    <url>
+        <loc>/categories/system-administration/</loc>
     </url>
     <url>
         <loc>/contact/</loc>

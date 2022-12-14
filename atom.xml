@@ -8,7 +8,7 @@
 	<updated>2022-12-14T00:00:00+00:00</updated>
 	<id>/atom.xml</id>
 	<entry xml:lang="en">
-		<title>A Somewhat Opinionated Guide to ZFS Snapshots</title>
+		<title>A Somewhat Opinionated Guide to Effective ZFS Snapshots</title>
 		<published>2022-12-14T00:00:00+00:00</published>
 		<updated>2022-12-14T00:00:00+00:00</updated>
 		<link rel="alternate" href="/opinionated-guide/" type="text/html"/>
