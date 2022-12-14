@@ -240,7 +240,7 @@ ExecStartPre=&#x2F;bin&#x2F;bash -c &quot;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;sn
 </code></pre>
 <h3 id="on-network-mount">On Network Mount<a class="zola-anchor" href="#on-network-mount" aria-label="Anchor link for: on-network-mount">§</a>
 </h3>
-<p>Or maybe you want to execute a snapshot every time a network drive is mounted or unmounted.  So when you or a program deletes something over the network you have snapshot of the state just prior to mount or unmount.  Your <code>smb.conf</code> allows you to this:</p>
+<p>Or maybe you want to execute a snapshot every time a network drive is mounted or unmounted.  So when you or a program deletes something over the network you have snapshot of the state just prior to mount or unmount.  Your <code>smb.conf</code> allows you to do this:</p>
 <pre><code>...
 [TM Volume]
 path = &quot;&#x2F;srv&#x2F;timemachine&quot;
@@ -269,11 +269,12 @@ done
 </h2>
 <p>Dynamic Snapshots are a term I'll credit myself with at least popularizing.  Dynamic Snapshots are very similar to triggered snapshots, in fact I think it is appropriate to think of them as a breed of Triggered Snapshots.  The key difference I feel is how ad hoc a Dynamic Snapshot <em>feels</em>.</p>
 <p>I'll try to give a few examples.</p>
-<p>Imagine you're in a folder and you realize you're about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.  All of these feel like leg work.  A Dynamic Snapshot shouldn't feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the $PWD and taking a snapshot immediately, like so:</p>
+<p>Imagine you're in a folder and you realize you're about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.</p>
+<p>All of these things you could do feel like leg work.  A Dynamic Snapshot shouldn't feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the $PWD and taking a snapshot immediately.  For instance, with <code>httm</code>, you might invoke a Dynamic Snapshot like so:</p>
 <pre><code>➜ httm -S .
 httm took a snapshot named: rpool&#x2F;ROOT&#x2F;ubuntu_tiebek@snap_2022-12-14-12:31:41_httmSnapFileMount
 </code></pre>
-<p>Another example -- ounce is a script that I wrote which wraps a target executable, traces its system calls, and executes snapshots <em>before</em> you do something silly.  So when I type <code>ounce nano /etc/samba/smb.conf</code> (I actually alias 'nano'='ounce nano'), ounce knows that it's smart and I'm dumb, and it traces each file open call, and sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago, and, so it takes a snapshot before I edit the file again because it wants me to have snapshots of all my file changes, <em>before</em> I do something silly.</p>
+<p>Another example -- <a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> is a script that I wrote which wraps a target executable, traces its system calls, and executes snapshots <em>before</em> you do something silly.  So when I type <code>ounce nano /etc/samba/smb.conf</code> (I actually alias 'nano'='ounce nano'), ounce knows that it's smart and I'm dumb, and it traces each file open call, and sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago, and, so it takes a snapshot before I edit the file again because it wants me to have snapshots of all my file changes, <em>before</em> I do something silly.</p>
 <p>We can check that <code>ounce</code> worked as advertised via <code>httm</code>:</p>
 <pre><code>➜ httm &#x2F;etc&#x2F;samba&#x2F;smb.conf
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
