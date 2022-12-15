@@ -175,7 +175,7 @@
 </div>
 
 </header><p>Much too long ago, I was <a href="https://github.com/kimono-koans/httm/issues/11">asked by a user</a> of <a href="https://github.com/kimono-koans/httm">httm</a> to describe the way I (over)use snapshots, and, though I said I would explain, I never thought I had anything important enough to say about best practices.</p>
-<p>However, I'm increasingly seeing posts on r/ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS and though I can only share my <em>opinions</em> regarding my perhaps <em>very idiosyncratic</em> snapshot setup, maybe these opinions could be helpful for those just starting out.</p>
+<p>However, I'm increasingly seeing posts on r/ZFS requesting instruction of how best to use the snapshot mechanisms of ZFS, and though I can only share my <em>opinions</em> regarding my perhaps <em>very idiosyncratic</em> snapshot setup, maybe these opinions could be helpful for those just starting out.</p>
 <p>Of course, this Getting Started guide will make some assumptions that may not apply to your setup.  This guide assumes you're using:</p>
 <ul>
 <li>ZFS for a data and a root pool</li>
@@ -193,7 +193,7 @@
 </h2>
 <p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention, <code>sanoid</code> and <code>syncoid</code> have made periodic snapshots simple for me.</p>
 <p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be, see later the <code>zsys</code> curse, or trying to do too much).  But what <code>sanoid</code> <em>is</em> is simple and composable.</p>
-<p>In my mind, what makes <code>sanoid</code> great is that it doesn't force you into using all its features, all the time.  It doesn't force you into a complicated policy/scheme (even I can do it!).  It presents two simple user interfaces instead of one overly complicated one.  There is no learning curve.  It works.  It allows you to compose it with your other Linux tools, and doesn't blow up when you do something a little different.</p>
+<p>In my mind, what makes <code>sanoid</code> great is that it doesn't force you into using all its features, all the time.  It doesn't force you into a complicated policy/scheme (even I can do it!).  It presents two simple user interfaces instead of one overly complicated one.  There is no learning curve.  It just works.  It allows you to compose it with your other Linux tools, and doesn't break when you do something a little different.</p>
 <p>For instance, suppose you want to sleep your NAS drives occasionally and not invoke <code>sanoid</code> when your drives are sleeping.  Here's how this user solved this problem.</p>
 <p>First, you'll need to check if any of the spinning rust drives are sleeping:</p>
 <pre><code>find &#x2F;dev&#x2F;disk&#x2F;by-id&#x2F; -type l | \
@@ -213,29 +213,18 @@ done
 <p>Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path.</p>
 <pre><code>...
 &#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;sleep&#x2F;
+...
 </code></pre>
 <p><code>sanoid</code> handles all this in stride.  It doesn't blow its top when you skip a few hours worth of snapshots on a certain pool.  It just keeps trucking.</p>
 <h3 id="replicating">Replicating<a class="zola-anchor" href="#replicating" aria-label="Anchor link for: replicating">§</a>
 </h3>
-<p>Okay hotshot, now that you've made a few snapshots, you now want to backup your <code>rpool</code> to your <code>datapool</code> using your own custom <code>zfs send\recv</code> options?  Easy peasy. <code>syncoid</code> has simple options, sane defaults, and an ability to cut a rug when you need to.</p>
+<p>Pop quiz hotshot, now that you've made a few snapshots, how would you replicate your <code>rpool</code> to your local <code>datapool</code> using your own custom <code>zfs send\recv</code> options?</p>
+<p>Easy peasy, you say. Just like <code>sanoid</code>, <code>syncoid</code> has simple options, sane defaults, and an ability to cut a rug when you need to.</p>
 <pre><code>&#x2F;usr&#x2F;sbin&#x2F;syncoid -r --sendoptions=&quot;L ec&quot; --recvoptions=&quot;o recordsize=1M o compression=zstd&quot; --force-delete --exclude=scratch --exclude=test --exclude=tmp rpool datapool&#x2F;rpool 2&gt;&amp;1 | logger -t syncoid
-</code></pre>
-<p>I won't reproduce my entire personal <code>sanoid.conf</code> configuration/policy here, but, suffice to say, you will want to leave a few things <code>unmanaged</code>.  Why?  Because <em>periodic snapshots are just the base</em> of any good snapshot scheme.</p>
-<pre><code>...
-[template_unmanaged]
-	frequently = 0
-        hourly = 24
-        daily = 7
-        weekly = 4
-        monthly = 6
-        yearly = 0
-        autosnap = no
-        autoprune = yes
-...
 </code></pre>
 <h2 id="triggered-snapshots">Triggered Snapshots<a class="zola-anchor" href="#triggered-snapshots" aria-label="Anchor link for: triggered-snapshots">§</a>
 </h2>
-<p>Canonical's <code>zsys</code> promised snapshots of every system update and seamless rollback on boot <em>as well as</em> periodic snapshots of significant directories.  It's unfortunate <code>zsys</code> wasn't ready for the Ubuntu 22.04 release, and may never be ready.  There are many reasons I think that didn't happen, which I won't rehash all those here, but one basic <code>zsys</code> premise is sound: <em>Periodic Snapshots are not enough</em>.</p>
+<p>Canonical's <code>zsys</code> promised snapshots of every system update and seamless rollback on boot <em>as well as</em> periodic snapshots of significant directories.  It's unfortunate <code>zsys</code> wasn't ready for the Ubuntu 22.04 release, and may never be ready.  There are many reasons I think that didn't happen, which I won't rehash here, but one basic <code>zsys</code> premise is sound: <em>Periodic Snapshots are not enough</em>.</p>
 <p>You may ask -- why?  Because, for me, it's sometimes important to know that a snapshot was triggered on a date and time certain.  Let's discuss a few examples of triggers you might like to use for a snapshot and how you might take those snapshots.</p>
 <h3 id="before-a-system-upgrade">Before a System Upgrade<a class="zola-anchor" href="#before-a-system-upgrade" aria-label="Anchor link for: before-a-system-upgrade">§</a>
 </h3>
@@ -247,16 +236,16 @@ zfs snapshot rpool@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot -r rpool&#x2F;ROOT@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot -r rpool&#x2F;USERDATA@snap_&quot;$DATE&quot;_prepApt
 </code></pre>
-<p>Next, you'll need to execute such a script invoked from <code>/etc/apt/apt.conf.d</code> before <code>apt upgrade</code> that looks similar to:</p>
+<p>Next, you'll need to execute such a script automatically upon <code>apt upgrade</code>.  A simple script in <code>/etc/apt/apt.conf.d</code> will suffice:</p>
 <pre><code>&#x2F;&#x2F; Takes a snapshot of the system before package changes.
 DPkg::Pre-Invoke {&quot;[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true&quot;;};
 </code></pre>
-<p>And you will also probably want to execute a script invoked from <code>/etc/kernel/preinst.d</code> each time you update your kernel, that looks something like:</p>
+<p>And you will also probably want to execute a script each time you update your kernel.  A script invoked from <code>/etc/kernel/preinst.d</code> might look something like:</p>
 <pre><code>[ -x &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt ] &amp;&amp; &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt || true
 </code></pre>
 <h3 id="before-service-launch">Before Service Launch<a class="zola-anchor" href="#before-service-launch" aria-label="Anchor link for: before-service-launch">§</a>
 </h3>
-<p>Sometimes you will want snapshot when a service starts up or shuts down.  For instance perhaps you have a service, with a database, that needs to be cleanly shutdown so that its state can also be cleanly snapshot-ed.</p>
+<p>Sometimes you will want to take a snapshot when a service starts up or shuts down.  For instance perhaps you have a service, with a database, that needs to be cleanly shutdown so that its state can also be cleanly snapshot-ed.</p>
 <p>Just add a little script to execute before or after start up via <code>systemctl edit</code>:</p>
 <pre><code>...
 [Service]
@@ -265,7 +254,7 @@ ExecStartPre=&#x2F;bin&#x2F;bash -c &quot;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;sn
 </code></pre>
 <h3 id="on-network-mount">On Network Mount<a class="zola-anchor" href="#on-network-mount" aria-label="Anchor link for: on-network-mount">§</a>
 </h3>
-<p>Perhaps you want to execute a snapshot every time a network drive is mounted or unmounted.  So, when you or a program deletes something over the network, you have snapshot of the state just prior to mount or unmount.</p>
+<p>Perhaps you want to take a snapshot every time a network drive is mounted or unmounted.  So, when you or a program deletes something over the network, you have snapshot of the state just prior to mount or unmount.</p>
 <p>Your <code>smb.conf</code> allows you to execute scripts just like this:</p>
 <pre><code>...
 [TM Volume]
@@ -281,7 +270,7 @@ root postexec = &quot;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;TMpost&quot;
 </code></pre>
 <h3 id="watch-a-directory">Watch a Directory<a class="zola-anchor" href="#watch-a-directory" aria-label="Anchor link for: watch-a-directory">§</a>
 </h3>
-<p>Maybe you only want to snapshot a folder when new files are added to it.  <code>inotifywait</code> is a wonderful tool for just that use case (and many others!):</p>
+<p>Maybe you only want to take a snapshot of a folder when new files are added to it.  <code>inotifywait</code> is a wonderful tool for just that use case (and many others!):</p>
 <pre><code>inotifywait -m -e moved_to &quot;&#x2F;srv&#x2F;downloads&#x2F;&quot; | while read -r line; do
 	snapDownloads
 done
