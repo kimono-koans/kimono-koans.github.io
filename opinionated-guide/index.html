@@ -218,9 +218,10 @@ done
 <p><code>sanoid</code> handles all this in stride.  It doesn't blow its top when you skip a few hours worth of snapshots on a certain pool.  It just keeps trucking.</p>
 <h3 id="replicating">Replicating<a class="zola-anchor" href="#replicating" aria-label="Anchor link for: replicating">§</a>
 </h3>
-<p>Pop quiz hotshot, now that you've made a few snapshots, how would you replicate your <code>rpool</code> to your local <code>datapool</code> using your own custom <code>zfs send\recv</code> options?</p>
+<p>Pop quiz hotshot, now that you've made a few snapshots, how would you replicate your <code>rpool</code> to your local <code>datapool</code> using your own custom <code>zfs send/recv</code> options?</p>
 <p>Easy peasy, you say. Just like <code>sanoid</code>, <code>syncoid</code> has simple options, sane defaults, and an ability to cut a rug when you need to.</p>
-<pre><code>&#x2F;usr&#x2F;sbin&#x2F;syncoid -r --sendoptions=&quot;L ec&quot; --recvoptions=&quot;o recordsize=1M o compression=zstd&quot; --force-delete --exclude=scratch --exclude=test --exclude=tmp rpool datapool&#x2F;rpool 2&gt;&amp;1 | logger -t syncoid
+<pre><code>&#x2F;usr&#x2F;sbin&#x2F;syncoid -r --sendoptions=&quot;L ec&quot; --recvoptions=&quot;o recordsize=1M o compression=zstd&quot; \
+--force-delete --exclude=scratch --exclude=test --exclude=tmp rpool datapool&#x2F;rpool 2&gt;&amp;1 | logger -t syncoid
 </code></pre>
 <h2 id="triggered-snapshots">Triggered Snapshots<a class="zola-anchor" href="#triggered-snapshots" aria-label="Anchor link for: triggered-snapshots">§</a>
 </h2>

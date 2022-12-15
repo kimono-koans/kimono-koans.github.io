@@ -57,9 +57,10 @@ done
 &lt;p&gt;&lt;code&gt;sanoid&lt;&#x2F;code&gt; handles all this in stride.  It doesn&#x27;t blow its top when you skip a few hours worth of snapshots on a certain pool.  It just keeps trucking.&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;replicating&quot;&gt;Replicating&lt;a class=&quot;zola-anchor&quot; href=&quot;#replicating&quot; aria-label=&quot;Anchor link for: replicating&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;Pop quiz hotshot, now that you&#x27;ve made a few snapshots, how would you replicate your &lt;code&gt;rpool&lt;&#x2F;code&gt; to your local &lt;code&gt;datapool&lt;&#x2F;code&gt; using your own custom &lt;code&gt;zfs send\recv&lt;&#x2F;code&gt; options?&lt;&#x2F;p&gt;
+&lt;p&gt;Pop quiz hotshot, now that you&#x27;ve made a few snapshots, how would you replicate your &lt;code&gt;rpool&lt;&#x2F;code&gt; to your local &lt;code&gt;datapool&lt;&#x2F;code&gt; using your own custom &lt;code&gt;zfs send&#x2F;recv&lt;&#x2F;code&gt; options?&lt;&#x2F;p&gt;
 &lt;p&gt;Easy peasy, you say. Just like &lt;code&gt;sanoid&lt;&#x2F;code&gt;, &lt;code&gt;syncoid&lt;&#x2F;code&gt; has simple options, sane defaults, and an ability to cut a rug when you need to.&lt;&#x2F;p&gt;
-&lt;pre&gt;&lt;code&gt;&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;syncoid -r --sendoptions=&amp;quot;L ec&amp;quot; --recvoptions=&amp;quot;o recordsize=1M o compression=zstd&amp;quot; --force-delete --exclude=scratch --exclude=test --exclude=tmp rpool datapool&amp;#x2F;rpool 2&amp;gt;&amp;amp;1 | logger -t syncoid
+&lt;pre&gt;&lt;code&gt;&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;syncoid -r --sendoptions=&amp;quot;L ec&amp;quot; --recvoptions=&amp;quot;o recordsize=1M o compression=zstd&amp;quot; \
+--force-delete --exclude=scratch --exclude=test --exclude=tmp rpool datapool&amp;#x2F;rpool 2&amp;gt;&amp;amp;1 | logger -t syncoid
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h2 id=&quot;triggered-snapshots&quot;&gt;Triggered Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#triggered-snapshots&quot; aria-label=&quot;Anchor link for: triggered-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
