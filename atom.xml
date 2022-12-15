@@ -30,9 +30,9 @@
 &lt;p&gt;Let&#x27;s discuss each.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;periodic-snapshots&quot;&gt;Periodic Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#periodic-snapshots&quot; aria-label=&quot;Anchor link for: periodic-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
-&lt;p&gt;Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;sanoid&lt;&#x2F;a&gt; as a periodic snapshot tool.  For those that don&#x27;t already know, &lt;code&gt;sanoid&lt;&#x2F;code&gt; describes itself as &amp;quot;a policy-driven snapshot management tool for ZFS filesystems&amp;quot;.  Although other tools exist and perhaps deserve mention, &lt;code&gt;sanoid&lt;&#x2F;code&gt; and &lt;code&gt;syncoid&lt;&#x2F;code&gt; make it easy enough to do what needs to be done.&lt;&#x2F;p&gt;
-&lt;p&gt;But note -- like any good tool -- &lt;code&gt;sanoid&lt;&#x2F;code&gt; isn&#x27;t a perfect fit for every use case (and shouldn&#x27;t be).  But what &lt;code&gt;sanoid&lt;&#x2F;code&gt; &lt;em&gt;is&lt;&#x2F;em&gt; is composable.  I have this feeling that the &lt;code&gt;sanoid&lt;&#x2F;code&gt; folks get asked to add features perhaps a little too often. When, in my mind, what makes &lt;code&gt;sanoid&lt;&#x2F;code&gt; great is that it doesn&#x27;t force you into using its features.  It presents simple user interface.  It works.  It relies on you to compose it with your other the other Linux tools.  You just need to make it work for you.  I love this.&lt;&#x2F;p&gt;
-&lt;p&gt;For instance, suppose you want to sleep your NAS drives occasionally and not invoke &lt;code&gt;sanoid&lt;&#x2F;code&gt; when your drives are sleeping.&lt;&#x2F;p&gt;
+&lt;p&gt;Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;sanoid&lt;&#x2F;a&gt; as a periodic snapshot tool.  For those that don&#x27;t already know, &lt;code&gt;sanoid&lt;&#x2F;code&gt; describes itself as &amp;quot;a policy-driven snapshot management tool for ZFS filesystems&amp;quot;.  Although other tools exist and perhaps deserve mention, &lt;code&gt;sanoid&lt;&#x2F;code&gt; and &lt;code&gt;syncoid&lt;&#x2F;code&gt; make periodic snapshots simple, and simple is what I always look for first in a tool.&lt;&#x2F;p&gt;
+&lt;p&gt;But note -- like any good tool -- &lt;code&gt;sanoid&lt;&#x2F;code&gt; isn&#x27;t a perfect fit for every use case (and shouldn&#x27;t be, see later the the curse of &lt;code&gt;zsys&lt;&#x2F;code&gt;, or trying to do too much).  But what &lt;code&gt;sanoid&lt;&#x2F;code&gt; &lt;em&gt;is&lt;&#x2F;em&gt; is simple and composable.  I have this feeling that the &lt;code&gt;sanoid&lt;&#x2F;code&gt; folks get asked to add features perhaps a little too often.  In my mind, what makes &lt;code&gt;sanoid&lt;&#x2F;code&gt; great is that it doesn&#x27;t force you into using all its features, all the time.  It doesn&#x27;t force you into a complicated policy&#x2F;scheme (even I can do it!).  It presents two simple user interfaces instead of one overly complicated one.  There is no learning curve.  It works.  It allows you to compose it with your other Linux tools, and doesn&#x27;t blow up when you do something a little different.&lt;&#x2F;p&gt;
+&lt;p&gt;For instance, suppose you want to sleep your NAS drives occasionally and not invoke &lt;code&gt;sanoid&lt;&#x2F;code&gt; when your drives are sleeping.  Here&#x27;s how this user solved this problem.&lt;&#x2F;p&gt;
 &lt;p&gt;First, you&#x27;ll need to check if any of the spinning rust drives are sleeping:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;find &amp;#x2F;dev&amp;#x2F;disk&amp;#x2F;by-id&amp;#x2F; -type l | \
 grep -v -e part -e wwn | \
@@ -43,10 +43,19 @@ while read disk; do
 done
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;Then, it becomes simple to check that condition whenever you invoke &lt;code&gt;sanoid&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
-&lt;pre&gt;&lt;code&gt;[[ $( &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;checkHDstatus | grep -i &amp;#x27;Device&amp;#x27; | &amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;grep -i -c &amp;#x27;STANDBY&amp;#x27; ) -gt 0 ]] || \
+&lt;pre&gt;&lt;code&gt;...
+[[ $( &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;checkHDstatus | grep -i &amp;#x27;Device&amp;#x27; | &amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;grep -i -c &amp;#x27;STANDBY&amp;#x27; ) -gt 0 ]] || \
 &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --prune-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;
+...
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;I won&#x27;t reproduce my entire personal &lt;code&gt;sanoid.conf&lt;&#x2F;code&gt; configuration&#x2F;policy.  Suffice to say you will want to leave a few things &lt;code&gt;unmanaged&lt;&#x2F;code&gt;.  Why?  Because &lt;em&gt;periodic snapshots are just the base&lt;&#x2F;em&gt; of any good snapshot scheme.&lt;&#x2F;p&gt;
+&lt;p&gt;Now imagine you wanted to alternate configuration files when the spinning rust is asleep.  Just change the configuration file path.  &lt;code&gt;sanoid&lt;&#x2F;code&gt; handles all this in stride:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;...
+&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;sleep&amp;#x2F;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Or maybe, now that you&#x27;ve made a few snapshots, you want to backup your &lt;code&gt;rpool&lt;&#x2F;code&gt; to your &lt;code&gt;datapool&lt;&#x2F;code&gt; using your own custom &lt;code&gt;zfs send\recv&lt;&#x2F;code&gt; options?  Easy peasy. &lt;code&gt;syncoid&lt;&#x2F;code&gt; has simple options, sane defaults, and an ability to cut a rug when you need to.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;syncoid -r --sendoptions=&amp;quot;L ec&amp;quot; --recvoptions=&amp;quot;o recordsize=1M o compression=zstd&amp;quot; --force-delete --exclude=scratch --exclude=test --exclude=tmp rpool datapool&amp;#x2F;rpool 2&amp;gt;&amp;amp;1 | logger -t syncoid
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I won&#x27;t reproduce my entire personal &lt;code&gt;sanoid.conf&lt;&#x2F;code&gt; configuration&#x2F;policy here, but, suffice to say, you will want to leave a few things &lt;code&gt;unmanaged&lt;&#x2F;code&gt;.  Why?  Because &lt;em&gt;periodic snapshots are just the base&lt;&#x2F;em&gt; of any good snapshot scheme.&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
 [template_unmanaged]
 	frequently = 0
@@ -61,11 +70,11 @@ done
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h2 id=&quot;triggered-snapshots&quot;&gt;Triggered Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#triggered-snapshots&quot; aria-label=&quot;Anchor link for: triggered-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
-&lt;p&gt;Canonical&#x27;s &lt;code&gt;zsys&lt;&#x2F;code&gt; promised snapshots of every system update and seamless rollback on boot &lt;em&gt;as well as&lt;&#x2F;em&gt; periodic snapshots of significant directories.  It&#x27;s unfortunate &lt;code&gt;zsys&lt;&#x2F;code&gt; wasn&#x27;t ready for the Ubuntu 22.04 release.  There are many reasons I think that didn&#x27;t happen, which I won&#x27;t rehash here, but suffice to say one basic &lt;code&gt;zsys&lt;&#x2F;code&gt; premise is sound: &lt;em&gt;Periodic Snapshots are not enough&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
-&lt;p&gt;You may ask -- why?  Because, for me, it&#x27;s sometimes important to know that snapshot was triggered on a date and time certain.  Let&#x27;s discuss a few examples of triggers you might like to use for a snapshot and how you might take those snapshots.&lt;&#x2F;p&gt;
+&lt;p&gt;Canonical&#x27;s &lt;code&gt;zsys&lt;&#x2F;code&gt; promised snapshots of every system update and seamless rollback on boot &lt;em&gt;as well as&lt;&#x2F;em&gt; periodic snapshots of significant directories.  It&#x27;s unfortunate &lt;code&gt;zsys&lt;&#x2F;code&gt; wasn&#x27;t ready for the Ubuntu 22.04 release, and may never be ready.  There are many reasons I think that didn&#x27;t happen, which I won&#x27;t rehash all those here, but one basic &lt;code&gt;zsys&lt;&#x2F;code&gt; premise is sound: &lt;em&gt;Periodic Snapshots are not enough&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;You may ask -- why?  Because, for me, it&#x27;s sometimes important to know that a snapshot was triggered on a date and time certain.  Let&#x27;s discuss a few examples of triggers you might like to use for a snapshot and how you might take those snapshots.&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;before-a-system-upgrade&quot;&gt;Before a System Upgrade&lt;a class=&quot;zola-anchor&quot; href=&quot;#before-a-system-upgrade&quot; aria-label=&quot;Anchor link for: before-a-system-upgrade&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;The first of such triggers we might consider are snapshots upon &lt;code&gt;apt upgrade&lt;&#x2F;code&gt; and kernel upgrades.  Here is exactly how I do those.&lt;&#x2F;p&gt;
+&lt;p&gt;The first triggers we might consider are snapshots upon &lt;code&gt;apt upgrade&lt;&#x2F;code&gt; and kernel updates.&lt;&#x2F;p&gt;
 &lt;p&gt;First, you&#x27;ll need a snapshot script to execute (perhaps called &lt;code&gt;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt&lt;&#x2F;code&gt;):&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;DATE=&amp;quot;$( &amp;#x2F;bin&amp;#x2F;date +%F-%T )&amp;quot;
 zfs snapshot -r bpool@snap_&amp;quot;$DATE&amp;quot;_prepApt
@@ -82,7 +91,7 @@ DPkg::Pre-Invoke {&amp;quot;[ -x &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;before-service-launch&quot;&gt;Before Service Launch&lt;a class=&quot;zola-anchor&quot; href=&quot;#before-service-launch&quot; aria-label=&quot;Anchor link for: before-service-launch&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;Sometimes you will want to snapshot when a service starts up or shuts down.  For instance perhaps you have a service, with a database, that needs to be cleanly shutdown so that its state can also be cleanly snapshot-ed.&lt;&#x2F;p&gt;
+&lt;p&gt;Sometimes you will want snapshot when a service starts up or shuts down.  For instance perhaps you have a service, with a database, that needs to be cleanly shutdown so that its state can also be cleanly snapshot-ed.&lt;&#x2F;p&gt;
 &lt;p&gt;Just add a little script to execute before or after start up via &lt;code&gt;systemctl edit&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
 [Service]
@@ -128,7 +137,7 @@ done
 &lt;pre&gt;&lt;code&gt;➜ httm -S .
 httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_tiebek@snap_2022-12-14-12:31:41_httmSnapFileMount
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Another example -- &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.bash&quot;&gt;ounce&lt;&#x2F;a&gt; is a script that I wrote which wraps a target executable, traces its system calls, and executes snapshots &lt;em&gt;before&lt;&#x2F;em&gt; you do something silly.  So when I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually &lt;code&gt;alias &#x27;nano&#x27;=&#x27;ounce nano&#x27;&lt;&#x2F;code&gt;), &lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, and it traces each file open call, and sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago, knows I have no snapshot of those file changes, and, so it takes a snapshot before I edit and save the file again.  Because it wants me to have snapshots of all my file changes, &lt;em&gt;before&lt;&#x2F;em&gt; I do something silly.&lt;&#x2F;p&gt;
+&lt;p&gt;Another example -- &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.bash&quot;&gt;ounce&lt;&#x2F;a&gt; is a script that I wrote which wraps a target executable, traces its system calls, and executes snapshots &lt;em&gt;before&lt;&#x2F;em&gt; you do something silly.  So when I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually &lt;code&gt;alias &#x27;nano&#x27;=&#x27;ounce nano&#x27;&lt;&#x2F;code&gt;), &lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, and it traces each file open call, and sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago, knows I have no snapshot of those file changes, and, so it takes a snapshot before I edit and save the file again.&lt;&#x2F;p&gt;
 &lt;p&gt;We can check that &lt;code&gt;ounce&lt;&#x2F;code&gt; worked as advertised via &lt;code&gt;httm&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;➜ httm &amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
