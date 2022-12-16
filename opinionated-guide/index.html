@@ -255,7 +255,7 @@ ExecStartPre=&#x2F;bin&#x2F;bash -c &quot;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;sn
 </code></pre>
 <h3 id="on-network-mount">On Network Mount<a class="zola-anchor" href="#on-network-mount" aria-label="Anchor link for: on-network-mount">§</a>
 </h3>
-<p>Perhaps you want to take a snapshot every time a network drive is mounted or unmounted.  So, when you or a program deletes something over the network, you have snapshot of the state just prior to mount or unmount.</p>
+<p>Perhaps you want to take a snapshot every time a network drive is mounted or unmounted.  So, when you or a program deletes something over the network, you have snapshot of the state just prior to mount or just after unmount.</p>
 <p>Your <code>smb.conf</code> allows you to execute scripts just like this:</p>
 <pre><code>...
 [TM Volume]
@@ -292,7 +292,12 @@ done
 <pre><code>➜ httm -S .
 httm took a snapshot named: rpool&#x2F;ROOT&#x2F;ubuntu_tiebek@snap_2022-12-14-12:31:41_httmSnapFileMount
 </code></pre>
-<p>Another example -- <a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> is a script that I wrote which wraps a target executable, traces its system calls, and executes snapshots <em>before</em> you do something silly.  So when I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias 'nano'='ounce nano'</code>), <code>ounce</code> knows that it's smart and I'm dumb, and it traces each file open call, and sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago, knows I have no snapshot of those file changes, and, so it takes a snapshot before I edit and save the file again.</p>
+<p>In order for the above to work you will need permissions.  The most elegant way to give a user ZFS permissions is now through the new <code>zfs allow</code> function.  If you have <code>httm</code> installed on Ubuntu, running <code>ounce --give-priv</code>, as an ordinary user, will execute something like the block below to give an ordinary user (you!) permissions to snapshot on all pools.  I'll describe <code>ounce</code> in more detail below.</p>
+<pre><code>for pool in &quot;$( sudo zpool list -o name | grep -v -e NAME )&quot;; do
+	sudo zfs allow &quot;$( whoami )&quot; mount,snapshot &quot;$pool&quot;
+done
+</code></pre>
+<p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> is a script that I wrote which wraps a target executable, can trace its system calls, and execute snapshots <em>before</em> you do something silly.  So when I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias 'nano'='ounce nano'</code>), <code>ounce</code> knows that it's smart and I'm dumb, and it traces each file open call, and sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago, knows I have no snapshot of those file changes, and, so it takes a snapshot before I edit and save the file again.</p>
 <p>We can check that <code>ounce</code> worked as advertised via <code>httm</code>:</p>
 <pre><code>➜ httm &#x2F;etc&#x2F;samba&#x2F;smb.conf
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────

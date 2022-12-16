@@ -94,7 +94,7 @@ ExecStartPre=&amp;#x2F;bin&amp;#x2F;bash -c &amp;quot;&amp;#x2F;usr&amp;#x2F;loc
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;on-network-mount&quot;&gt;On Network Mount&lt;a class=&quot;zola-anchor&quot; href=&quot;#on-network-mount&quot; aria-label=&quot;Anchor link for: on-network-mount&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;Perhaps you want to take a snapshot every time a network drive is mounted or unmounted.  So, when you or a program deletes something over the network, you have snapshot of the state just prior to mount or unmount.&lt;&#x2F;p&gt;
+&lt;p&gt;Perhaps you want to take a snapshot every time a network drive is mounted or unmounted.  So, when you or a program deletes something over the network, you have snapshot of the state just prior to mount or just after unmount.&lt;&#x2F;p&gt;
 &lt;p&gt;Your &lt;code&gt;smb.conf&lt;&#x2F;code&gt; allows you to execute scripts just like this:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
 [TM Volume]
@@ -131,7 +131,12 @@ done
 &lt;pre&gt;&lt;code&gt;➜ httm -S .
 httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_tiebek@snap_2022-12-14-12:31:41_httmSnapFileMount
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Another example -- &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.bash&quot;&gt;ounce&lt;&#x2F;a&gt; is a script that I wrote which wraps a target executable, traces its system calls, and executes snapshots &lt;em&gt;before&lt;&#x2F;em&gt; you do something silly.  So when I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually &lt;code&gt;alias &#x27;nano&#x27;=&#x27;ounce nano&#x27;&lt;&#x2F;code&gt;), &lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, and it traces each file open call, and sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago, knows I have no snapshot of those file changes, and, so it takes a snapshot before I edit and save the file again.&lt;&#x2F;p&gt;
+&lt;p&gt;In order for the above to work you will need permissions.  The most elegant way to give a user ZFS permissions is now through the new &lt;code&gt;zfs allow&lt;&#x2F;code&gt; function.  If you have &lt;code&gt;httm&lt;&#x2F;code&gt; installed on Ubuntu, running &lt;code&gt;ounce --give-priv&lt;&#x2F;code&gt;, as an ordinary user, will execute something like the block below to give an ordinary user (you!) permissions to snapshot on all pools.  I&#x27;ll describe &lt;code&gt;ounce&lt;&#x2F;code&gt; in more detail below.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;for pool in &amp;quot;$( sudo zpool list -o name | grep -v -e NAME )&amp;quot;; do
+	sudo zfs allow &amp;quot;$( whoami )&amp;quot; mount,snapshot &amp;quot;$pool&amp;quot;
+done
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.bash&quot;&gt;ounce&lt;&#x2F;a&gt; is a script that I wrote which wraps a target executable, can trace its system calls, and execute snapshots &lt;em&gt;before&lt;&#x2F;em&gt; you do something silly.  So when I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually &lt;code&gt;alias &#x27;nano&#x27;=&#x27;ounce nano&#x27;&lt;&#x2F;code&gt;), &lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, and it traces each file open call, and sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago, knows I have no snapshot of those file changes, and, so it takes a snapshot before I edit and save the file again.&lt;&#x2F;p&gt;
 &lt;p&gt;We can check that &lt;code&gt;ounce&lt;&#x2F;code&gt; worked as advertised via &lt;code&gt;httm&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;➜ httm &amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
