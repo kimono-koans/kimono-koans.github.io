@@ -194,7 +194,7 @@
 <p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention, <code>sanoid</code> and <code>syncoid</code> have made periodic snapshots simple for me.</p>
 <p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be, see later <code>zsys</code> and the &quot;Curse of Trying to Do Too Much&quot;).  But what <code>sanoid</code> <em>is</em> is simple and composable.</p>
 <p>In my mind, what makes <code>sanoid</code> great is that it doesn't force you into using all its features, all the time.  It doesn't force you into a complicated policy/scheme (even I can do it!).  It presents two simple user interfaces instead of one overly complicated one.  There is no learning curve.  It just works.  It allows you to compose it with your other Linux tools, and doesn't break when you do something a little different.</p>
-<p>For instance, suppose you want to sleep your NAS drives occasionally and not invoke <code>sanoid</code> when your drives are sleeping.  Here's how this user solved this problem.</p>
+<p>For instance, suppose you want to sleep your NAS drives occasionally and not invoke <code>sanoid</code> when your drives are sleeping.  Here's how this user solved this particular problem.</p>
 <p>First, you'll need to check if any of the spinning rust drives are sleeping:</p>
 <pre><code>find &#x2F;dev&#x2F;disk&#x2F;by-id&#x2F; -type l | \
 grep -v -e part -e wwn | \
@@ -219,7 +219,7 @@ else
 fi
 ...
 </code></pre>
-<p><code>sanoid</code> handles all this in stride.  It doesn't panic when you skip a few hours worth of snapshots on a certain pool.  It just keeps trucking.</p>
+<p><code>sanoid</code> handles all this in stride.  It doesn't panic when you skip a few hours worth of snapshots on a certain pool.  It doesn't need to control heaven and earth.  It just keeps trucking.</p>
 <h3 id="replicating">Replicating<a class="zola-anchor" href="#replicating" aria-label="Anchor link for: replicating">§</a>
 </h3>
 <p>Pop Quiz Hotshot: now that you've made a few snapshots, how would you replicate your <code>rpool</code> to your local <code>datapool</code> using your own custom <code>zfs send/recv</code> options?</p>
