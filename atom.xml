@@ -31,7 +31,7 @@
 &lt;h2 id=&quot;periodic-snapshots&quot;&gt;Periodic Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#periodic-snapshots&quot; aria-label=&quot;Anchor link for: periodic-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
 &lt;p&gt;Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;sanoid&lt;&#x2F;a&gt; as a periodic snapshot tool.  For those that don&#x27;t already know, &lt;code&gt;sanoid&lt;&#x2F;code&gt; describes itself as &amp;quot;a policy-driven snapshot management tool for ZFS filesystems&amp;quot;.  Although other tools exist and perhaps deserve mention, &lt;code&gt;sanoid&lt;&#x2F;code&gt; and &lt;code&gt;syncoid&lt;&#x2F;code&gt; have made periodic snapshots simple for me.&lt;&#x2F;p&gt;
-&lt;p&gt;But note -- like any good tool -- &lt;code&gt;sanoid&lt;&#x2F;code&gt; isn&#x27;t a perfect fit for every use case (and shouldn&#x27;t be, see later the &lt;code&gt;zsys&lt;&#x2F;code&gt; curse, or trying to do too much).  But what &lt;code&gt;sanoid&lt;&#x2F;code&gt; &lt;em&gt;is&lt;&#x2F;em&gt; is simple and composable.&lt;&#x2F;p&gt;
+&lt;p&gt;But note -- like any good tool -- &lt;code&gt;sanoid&lt;&#x2F;code&gt; isn&#x27;t a perfect fit for every use case (and shouldn&#x27;t be, see later &lt;code&gt;zsys&lt;&#x2F;code&gt; and the &amp;quot;Curse of Trying to Do Too Much&amp;quot;).  But what &lt;code&gt;sanoid&lt;&#x2F;code&gt; &lt;em&gt;is&lt;&#x2F;em&gt; is simple and composable.&lt;&#x2F;p&gt;
 &lt;p&gt;In my mind, what makes &lt;code&gt;sanoid&lt;&#x2F;code&gt; great is that it doesn&#x27;t force you into using all its features, all the time.  It doesn&#x27;t force you into a complicated policy&#x2F;scheme (even I can do it!).  It presents two simple user interfaces instead of one overly complicated one.  There is no learning curve.  It just works.  It allows you to compose it with your other Linux tools, and doesn&#x27;t break when you do something a little different.&lt;&#x2F;p&gt;
 &lt;p&gt;For instance, suppose you want to sleep your NAS drives occasionally and not invoke &lt;code&gt;sanoid&lt;&#x2F;code&gt; when your drives are sleeping.  Here&#x27;s how this user solved this problem.&lt;&#x2F;p&gt;
 &lt;p&gt;First, you&#x27;ll need to check if any of the spinning rust drives are sleeping:&lt;&#x2F;p&gt;
@@ -49,22 +49,26 @@ done
 &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --prune-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;
 ...
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path.&lt;&#x2F;p&gt;
+&lt;p&gt;Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
-&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;sleep&amp;#x2F;
+if [[ $( &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;checkHDstatus | grep -i &amp;#x27;Device&amp;#x27; | &amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;grep -i -c &amp;#x27;STANDBY&amp;#x27; ) -gt 0 ]]; then
+	&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;awake&amp;#x2F;
+else
+	&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;sleep&amp;#x2F;
+fi
 ...
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;&lt;code&gt;sanoid&lt;&#x2F;code&gt; handles all this in stride.  It doesn&#x27;t blow its top when you skip a few hours worth of snapshots on a certain pool.  It just keeps trucking.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;sanoid&lt;&#x2F;code&gt; handles all this in stride.  It doesn&#x27;t panic when you skip a few hours worth of snapshots on a certain pool.  It just keeps trucking.&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;replicating&quot;&gt;Replicating&lt;a class=&quot;zola-anchor&quot; href=&quot;#replicating&quot; aria-label=&quot;Anchor link for: replicating&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
-&lt;p&gt;Pop quiz hotshot, now that you&#x27;ve made a few snapshots, how would you replicate your &lt;code&gt;rpool&lt;&#x2F;code&gt; to your local &lt;code&gt;datapool&lt;&#x2F;code&gt; using your own custom &lt;code&gt;zfs send&#x2F;recv&lt;&#x2F;code&gt; options?&lt;&#x2F;p&gt;
+&lt;p&gt;Pop Quiz Hotshot: now that you&#x27;ve made a few snapshots, how would you replicate your &lt;code&gt;rpool&lt;&#x2F;code&gt; to your local &lt;code&gt;datapool&lt;&#x2F;code&gt; using your own custom &lt;code&gt;zfs send&#x2F;recv&lt;&#x2F;code&gt; options?&lt;&#x2F;p&gt;
 &lt;p&gt;Easy peasy, you say. Just like &lt;code&gt;sanoid&lt;&#x2F;code&gt;, &lt;code&gt;syncoid&lt;&#x2F;code&gt; has simple options, sane defaults, and an ability to cut a rug when you need to.&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;syncoid -r --sendoptions=&amp;quot;L ec&amp;quot; --recvoptions=&amp;quot;o recordsize=1M o compression=zstd&amp;quot; \
 --force-delete --exclude=scratch --exclude=test --exclude=tmp rpool datapool&amp;#x2F;rpool 2&amp;gt;&amp;amp;1 | logger -t syncoid
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h2 id=&quot;triggered-snapshots&quot;&gt;Triggered Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#triggered-snapshots&quot; aria-label=&quot;Anchor link for: triggered-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
-&lt;p&gt;Canonical&#x27;s &lt;code&gt;zsys&lt;&#x2F;code&gt; promised snapshots of every system update and seamless rollback on boot &lt;em&gt;as well as&lt;&#x2F;em&gt; periodic snapshots of significant directories.  It&#x27;s unfortunate &lt;code&gt;zsys&lt;&#x2F;code&gt; wasn&#x27;t ready for the Ubuntu 22.04 release, and may never be ready.  There are many reasons I think that didn&#x27;t happen, which I won&#x27;t rehash here, but one basic &lt;code&gt;zsys&lt;&#x2F;code&gt; premise is sound: &lt;em&gt;Periodic Snapshots are not enough&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Canonical&#x27;s &lt;code&gt;zsys&lt;&#x2F;code&gt; promised snapshots of every system update and seamless rollback on boot &lt;em&gt;as well as&lt;&#x2F;em&gt; periodic snapshots of significant datasets&#x2F;directories.  It&#x27;s unfortunate &lt;code&gt;zsys&lt;&#x2F;code&gt; wasn&#x27;t ready for the Ubuntu 22.04 release, and may never be ready.  I won&#x27;t rehash &amp;quot;Why?&amp;quot; here, but one basic &lt;code&gt;zsys&lt;&#x2F;code&gt; premise is sound: &lt;em&gt;Periodic Snapshots are not enough&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
 &lt;p&gt;You may ask -- why?  Because, for me, it&#x27;s sometimes important to know that a snapshot was triggered on a date and time certain.  Let&#x27;s discuss a few examples of triggers you might like to use for a snapshot and how you might take those snapshots.&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;before-a-system-upgrade&quot;&gt;Before a System Upgrade&lt;a class=&quot;zola-anchor&quot; href=&quot;#before-a-system-upgrade&quot; aria-label=&quot;Anchor link for: before-a-system-upgrade&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h3&gt;
@@ -123,7 +127,7 @@ done
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h2 id=&quot;dynamic-snapshots&quot;&gt;Dynamic Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#dynamic-snapshots&quot; aria-label=&quot;Anchor link for: dynamic-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
-&lt;p&gt;&amp;quot;Dynamic Snapshots&amp;quot; is a term I&#x27;ll credit myself for, at least, popularizing.  Dynamic Snapshots are very similar to triggered snapshots, in fact I think it is appropriate to think of them simply as a breed of Triggered Snapshots.  The key difference is how ad-hoc a Dynamic Snapshot &lt;em&gt;feels&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;&amp;quot;Dynamic Snapshots&amp;quot; is a term I&#x27;ll credit myself for, at least, popularizing.  Dynamic Snapshots are very similar to Triggered Snapshots, in fact I think it is appropriate to think of Dynamic Snapshots as simply a breed of Triggered Snapshots.  The key difference is how ad-hoc a Dynamic Snapshot &lt;em&gt;feels&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
 &lt;p&gt;I&#x27;ll try to give a few examples.&lt;&#x2F;p&gt;
 &lt;p&gt;Imagine -- you&#x27;re in a folder and you realize you&#x27;re about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  You don&#x27;t know precisely which dataset your working directory resides.  And you&#x27;re not really in the mood to think about it.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.&lt;&#x2F;p&gt;
 &lt;p&gt;All of these things you could do, &lt;em&gt;feel&lt;&#x2F;em&gt; like leg work.  A Dynamic Snapshot shouldn&#x27;t feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the &lt;code&gt;$PWD&lt;&#x2F;code&gt; and taking a snapshot immediately.&lt;&#x2F;p&gt;

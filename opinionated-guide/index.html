@@ -192,7 +192,7 @@
 <h2 id="periodic-snapshots">Periodic Snapshots<a class="zola-anchor" href="#periodic-snapshots" aria-label="Anchor link for: periodic-snapshots">§</a>
 </h2>
 <p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention, <code>sanoid</code> and <code>syncoid</code> have made periodic snapshots simple for me.</p>
-<p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be, see later the <code>zsys</code> curse, or trying to do too much).  But what <code>sanoid</code> <em>is</em> is simple and composable.</p>
+<p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be, see later <code>zsys</code> and the &quot;Curse of Trying to Do Too Much&quot;).  But what <code>sanoid</code> <em>is</em> is simple and composable.</p>
 <p>In my mind, what makes <code>sanoid</code> great is that it doesn't force you into using all its features, all the time.  It doesn't force you into a complicated policy/scheme (even I can do it!).  It presents two simple user interfaces instead of one overly complicated one.  There is no learning curve.  It just works.  It allows you to compose it with your other Linux tools, and doesn't break when you do something a little different.</p>
 <p>For instance, suppose you want to sleep your NAS drives occasionally and not invoke <code>sanoid</code> when your drives are sleeping.  Here's how this user solved this problem.</p>
 <p>First, you'll need to check if any of the spinning rust drives are sleeping:</p>
@@ -210,22 +210,26 @@ done
 &#x2F;usr&#x2F;sbin&#x2F;sanoid --prune-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;
 ...
 </code></pre>
-<p>Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path.</p>
+<p>Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path:</p>
 <pre><code>...
-&#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;sleep&#x2F;
+if [[ $( &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;checkHDstatus | grep -i &#x27;Device&#x27; | &#x2F;usr&#x2F;bin&#x2F;grep -i -c &#x27;STANDBY&#x27; ) -gt 0 ]]; then
+	&#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;awake&#x2F;
+else
+	&#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;sleep&#x2F;
+fi
 ...
 </code></pre>
-<p><code>sanoid</code> handles all this in stride.  It doesn't blow its top when you skip a few hours worth of snapshots on a certain pool.  It just keeps trucking.</p>
+<p><code>sanoid</code> handles all this in stride.  It doesn't panic when you skip a few hours worth of snapshots on a certain pool.  It just keeps trucking.</p>
 <h3 id="replicating">Replicating<a class="zola-anchor" href="#replicating" aria-label="Anchor link for: replicating">§</a>
 </h3>
-<p>Pop quiz hotshot, now that you've made a few snapshots, how would you replicate your <code>rpool</code> to your local <code>datapool</code> using your own custom <code>zfs send/recv</code> options?</p>
+<p>Pop Quiz Hotshot: now that you've made a few snapshots, how would you replicate your <code>rpool</code> to your local <code>datapool</code> using your own custom <code>zfs send/recv</code> options?</p>
 <p>Easy peasy, you say. Just like <code>sanoid</code>, <code>syncoid</code> has simple options, sane defaults, and an ability to cut a rug when you need to.</p>
 <pre><code>&#x2F;usr&#x2F;sbin&#x2F;syncoid -r --sendoptions=&quot;L ec&quot; --recvoptions=&quot;o recordsize=1M o compression=zstd&quot; \
 --force-delete --exclude=scratch --exclude=test --exclude=tmp rpool datapool&#x2F;rpool 2&gt;&amp;1 | logger -t syncoid
 </code></pre>
 <h2 id="triggered-snapshots">Triggered Snapshots<a class="zola-anchor" href="#triggered-snapshots" aria-label="Anchor link for: triggered-snapshots">§</a>
 </h2>
-<p>Canonical's <code>zsys</code> promised snapshots of every system update and seamless rollback on boot <em>as well as</em> periodic snapshots of significant directories.  It's unfortunate <code>zsys</code> wasn't ready for the Ubuntu 22.04 release, and may never be ready.  There are many reasons I think that didn't happen, which I won't rehash here, but one basic <code>zsys</code> premise is sound: <em>Periodic Snapshots are not enough</em>.</p>
+<p>Canonical's <code>zsys</code> promised snapshots of every system update and seamless rollback on boot <em>as well as</em> periodic snapshots of significant datasets/directories.  It's unfortunate <code>zsys</code> wasn't ready for the Ubuntu 22.04 release, and may never be ready.  I won't rehash &quot;Why?&quot; here, but one basic <code>zsys</code> premise is sound: <em>Periodic Snapshots are not enough</em>.</p>
 <p>You may ask -- why?  Because, for me, it's sometimes important to know that a snapshot was triggered on a date and time certain.  Let's discuss a few examples of triggers you might like to use for a snapshot and how you might take those snapshots.</p>
 <h3 id="before-a-system-upgrade">Before a System Upgrade<a class="zola-anchor" href="#before-a-system-upgrade" aria-label="Anchor link for: before-a-system-upgrade">§</a>
 </h3>
@@ -284,7 +288,7 @@ done
 </code></pre>
 <h2 id="dynamic-snapshots">Dynamic Snapshots<a class="zola-anchor" href="#dynamic-snapshots" aria-label="Anchor link for: dynamic-snapshots">§</a>
 </h2>
-<p>&quot;Dynamic Snapshots&quot; is a term I'll credit myself for, at least, popularizing.  Dynamic Snapshots are very similar to triggered snapshots, in fact I think it is appropriate to think of them simply as a breed of Triggered Snapshots.  The key difference is how ad-hoc a Dynamic Snapshot <em>feels</em>.</p>
+<p>&quot;Dynamic Snapshots&quot; is a term I'll credit myself for, at least, popularizing.  Dynamic Snapshots are very similar to Triggered Snapshots, in fact I think it is appropriate to think of Dynamic Snapshots as simply a breed of Triggered Snapshots.  The key difference is how ad-hoc a Dynamic Snapshot <em>feels</em>.</p>
 <p>I'll try to give a few examples.</p>
 <p>Imagine -- you're in a folder and you realize you're about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  You don't know precisely which dataset your working directory resides.  And you're not really in the mood to think about it.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.</p>
 <p>All of these things you could do, <em>feel</em> like leg work.  A Dynamic Snapshot shouldn't feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the <code>$PWD</code> and taking a snapshot immediately.</p>
