@@ -282,13 +282,13 @@ done
 </code></pre>
 <h3 id="cleanup">Cleanup<a class="zola-anchor" href="#cleanup" aria-label="Anchor link for: cleanup">§</a>
 </h3>
-<p>Now that you've made these snapshots, if you're anything like me, you <em>must</em> clean them up once they aren't needed anymore.  I highly suggest <a href="https://github.com/bahamas10/zfs-prune-snapshots">zfs-prune-snapshots</a> for this task.</p>
+<p>Now that you've made these snapshots, if you're anything like me, you <em>must</em> clean them up once they aren't needed anymore.  I suggest <a href="https://github.com/bahamas10/zfs-prune-snapshots">zfs-prune-snapshots</a> for this task.</p>
 <p>Just run as a cron script daily to cleanup any triggered or dynamic snapshots that have outlived their usefulness:</p>
 <pre><code>&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;zfs-prune-snapshots -s &#x27;_prepApt&#x27; 2w 2&gt;&amp;1 | logger -t sanoid
 </code></pre>
 <h2 id="dynamic-snapshots">Dynamic Snapshots<a class="zola-anchor" href="#dynamic-snapshots" aria-label="Anchor link for: dynamic-snapshots">§</a>
 </h2>
-<p>&quot;Dynamic Snapshots&quot; is a term I'll credit myself for, at least, popularizing.  Dynamic Snapshots are very similar to Triggered Snapshots, in fact I think it is appropriate to think of Dynamic Snapshots as simply a breed of Triggered Snapshots.  The key difference is how ad-hoc a Dynamic Snapshot <em>feels</em>.</p>
+<p>&quot;Dynamic Snapshots&quot; is a term I'll credit myself for, at least, popularizing.  Dynamic Snapshots are very similar to Triggered Snapshots.  In fact, I think it is appropriate to think of Dynamic Snapshots as simply a breed of Triggered Snapshots.  The key difference is how ad-hoc a Dynamic Snapshot <em>feels</em>.</p>
 <p>I'll try to give a few examples.</p>
 <p>Imagine -- you're in a folder and you realize you're about to change a bunch of files, and you want a snapshot of the state of the folder before you make any edits.  You don't know precisely which dataset your working directory resides.  And you're not really in the mood to think about it.  Of course, you could just copy that folder, rename it, and make edits in the new folder. Or you could do the same with each file as you go.  Or you could determine the dataset upon which this folder is located and manually do a snapshot yourself.</p>
 <p>All of these things you could do, <em>feel</em> like leg work.  A Dynamic Snapshot shouldn't feel like leg work.  A Dynamic Snapshot should just work by determining the ZFS mount of the <code>$PWD</code> and taking a snapshot immediately.</p>
@@ -301,7 +301,7 @@ httm took a snapshot named: rpool&#x2F;ROOT&#x2F;ubuntu_tiebek@snap_2022-12-14-1
 	sudo zfs allow &quot;$( whoami )&quot; mount,snapshot &quot;$pool&quot;
 done
 </code></pre>
-<p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> is a script that I wrote which wraps a target executable, can trace its system calls, and execute snapshots <em>before</em> you do something silly.  So when I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias 'nano'='ounce --trace nano'</code>), <code>ounce</code> knows that it's smart and I'm dumb, so it traces each file open call, sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago.  <code>ounce</code> sees I have no snapshot of those file changes, so it takes a snapshot of the dataset upon which <code>/etc/samba/smb.conf</code> is located, before I edit and save the file again.</p>
+<p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> is a script that I wrote which wraps a target executable, can trace its system calls, and execute snapshots <em>before</em> you do something silly.  <code>ounce</code> is my canonical example of a dynamic snapshot script.  When I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias 'nano'='ounce --trace nano'</code>), <code>ounce</code> knows that it's smart and I'm dumb, so it traces each file open call, sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago.  <code>ounce</code> sees I have no snapshot of those file changes, so it takes a snapshot of the dataset upon which <code>/etc/samba/smb.conf</code> is located, before I edit and save the file again.</p>
 <p>We can check that <code>ounce</code> worked as advertised via <code>httm</code>:</p>
 <pre><code>➜ httm &#x2F;etc&#x2F;samba&#x2F;smb.conf
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
