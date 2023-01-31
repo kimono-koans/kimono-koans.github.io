@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>Use `httm` to convert your ZFS&#x2F;btrfs snapshots to `git` archives - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono koans&#x27; blog! Use `httm` to convert your ZFS&#x2F;btrfs snapshots to `git` archives "/><meta name="keywords" content="filesystems, system administration, misc., httm, nicotine, ZFS, snaphots" />
+    <meta property="og:title" content="kimono koans&#x27; blog! -&nbsp;Use `httm` to convert your ZFS&#x2F;btrfs snapshots to `git` archives" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="&#x2F;nicotine&#x2F;"/><meta property="og:description" content="kimono koans&#x27; blog!"/>
+    <link rel="preload" href="/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/style.css?h=f8c7bc50801cb0dd9da65fd930c01ca7fb7efd801345957f21cba38c367faec8">
+    <link rel="stylesheet" href="/color/pink.css?h=7b272a1d22c0969cbedbdae17a3b26ae82fc8d1eb0368ac5ab527ee02f81a9c8">
+<link rel="alternate" type="application/atom+xml" title="kimono koans&#x27; blog! RSS" href="/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono-koans
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        /about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        /contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        /about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        /contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="&#x2F;nicotine&#x2F;">Use `httm` to convert your ZFS&#x2F;btrfs snapshots to `git` archives</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2023.01.31
+                [Updated: 2023.01.31]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="/categories/filesystems/">filesystems</a>,
+            <a href="/categories/system-administration/">system administration</a>,
+            <a href="/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="/tags/httm/">httm</a>
+        
+    #<a href="/tags/nicotine/">nicotine</a>
+        
+    #<a href="/tags/zfs/">ZFS</a>
+        
+    #<a href="/tags/snaphots/">snaphots</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p><a href="https://github.com/kimono-koans/httm/">httm</a> prints the size, date and corresponding locations of available unique versions (deduplicated by modify time and size) of files residing on snapshots, and can also be used <em>interactively</em> to select, restore, and snapshot files. New in <code>httm</code> version <a href="https://github.com/kimono-koans/httm/releases/tag/0.20.3">0.20.3</a>:</p>
+<p>Introducing <a href="https://github.com/kimono-koans/httm/blob/master/scripts/nicotine.bash">nicotine</a>, the perfect complement to <code>tar</code>.  (Yes, I do need a better name for this script.)  <code>nicotine</code> is a wrapper script for <code>httm</code> which converts unique file versions on snapshots to a <code>git</code> archive.</p>
+<p>Although a proof of concept script that accomplishes the same thing has been included in the <code>httm</code> <a href="https://github.com/kimono-koans/httm/README.md">README.md</a> for awhile, if you need your snapshots on the go, and if you can't just send and receive the bits, you shouldn't have to copy and paste a script.  Perhaps you also deserve some polish and some basic sanity checks!</p>
+<p>First, create a snapshot archive:</p>
+<pre><code>➜ nicotine ~&#x2F;program&#x2F;httm&#x2F;*
+nicotine archive created successfully: &#x2F;home&#x2F;kimono&#x2F;Cargo.lock-snapshot-archive.tar.gz
+nicotine archive created successfully: &#x2F;home&#x2F;kimono&#x2F;Cargo.toml-snapshot-archive.tar.gz
+&#x2F;srv&#x2F;program&#x2F;httm&#x2F;debian is an empty directory. Skipping.
+nicotine archive created successfully: &#x2F;home&#x2F;kimono&#x2F;httm.1-snapshot-archive.tar.gz
+nicotine archive created successfully: &#x2F;home&#x2F;kimono&#x2F;LICENSE-snapshot-archive.tar.gz
+nicotine archive created successfully: &#x2F;home&#x2F;kimono&#x2F;packaging-snapshot-archive.tar.gz
+nicotine archive created successfully: &#x2F;home&#x2F;kimono&#x2F;README.md-snapshot-archive.tar.gz
+nicotine archive created successfully: &#x2F;home&#x2F;kimono&#x2F;scripts-snapshot-archive.tar.gz
+nicotine archive created successfully: &#x2F;home&#x2F;kimono&#x2F;src-snapshot-archive.tar.gz
+</code></pre>
+<p>Next, expand that archive wherever you need it:</p>
+<pre><code>➜ tar zxvf httm.1-snapshot-archive.tar.gz
+.&#x2F;httm.1&#x2F;
+.&#x2F;httm.1&#x2F;httm.1
+.&#x2F;httm.1&#x2F;.git&#x2F;
+...
+</code></pre>
+<p>Then, use it as you would a git archive.  For instance, view changes via <code>git log -p</code>:</p>
+<pre><code>➜  cd httm.1; git log -p
+commit c2cd0f4c7728b3f3dcd7d87d7c24334b0d5b5d41 (HEAD -&gt; master)
+Author: ...
+Date:   Mon Jan 30 14:53:30 2023 -0600
+
+	httm commit from ZFS snapshot
+
+diff --git a&#x2F;httm.1 b&#x2F;httm.1
+index 3831a10..e895f53 100644
+--- a&#x2F;httm.1
++++ b&#x2F;httm.1
+@@ -1,9 +1,9 @@
+	.\&quot; DO NOT MODIFY THIS FILE!  It was generated by help2man 1.49.3.
+-.TH HTTM &quot;1&quot; &quot;January 2023&quot; &quot;httm 0.20.0&quot; &quot;User Commands&quot;
++.TH HTTM &quot;1&quot; &quot;January 2023&quot; &quot;httm 0.20.1&quot; &quot;User Commands&quot;
+	.SH NAME
+-httm \- manual page for httm 0.20.0
++httm \- manual page for httm 0.20.1
+	.SH DESCRIPTION
+-httm 0.20.0
++httm 0.20.1
+...
+</code></pre>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>
