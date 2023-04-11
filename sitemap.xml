@@ -62,6 +62,9 @@
         <loc>/page/3/</loc>
     </url>
     <url>
+        <loc>/page/4/</loc>
+    </url>
+    <url>
         <loc>/tags/</loc>
     </url>
     <url>
@@ -92,6 +95,9 @@
         <loc>/tags/inotifywait/</loc>
     </url>
     <url>
+        <loc>/tags/leadership/</loc>
+    </url>
+    <url>
         <loc>/tags/nicotine/</loc>
     </url>
     <url>
@@ -102,6 +108,9 @@
     </url>
     <url>
         <loc>/tags/recovery/</loc>
+    </url>
+    <url>
+        <loc>/tags/rust/</loc>
     </url>
     <url>
         <loc>/tags/snap/</loc>
@@ -117,6 +126,10 @@
     </url>
     <url>
         <loc>/tags/zfs/</loc>
+    </url>
+    <url>
+        <loc>/trademark/</loc>
+        <lastmod>2023-04-11</lastmod>
     </url>
     <url>
         <loc>/unix/</loc>
