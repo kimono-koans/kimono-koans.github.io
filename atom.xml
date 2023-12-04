@@ -5,8 +5,42 @@
     <link href="/atom.xml" rel="self" type="application/atom+xml"/>
     <link href="/"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2023-04-11T00:00:00+00:00</updated>
+    <updated>2023-12-04T00:00:00+00:00</updated>
     <id>/atom.xml</id>
+    <entry xml:lang="en">
+        <title>All your snapshot data, at your fingertips, enables NILFS2-inspired ZFS snapshots</title>
+        <published>2023-12-04T00:00:00+00:00</published>
+        <updated>2023-12-04T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="/everything/" type="text/html"/>
+        <id>/everything/</id>
+        
+        <content type="html">&lt;p&gt;Of course, ZFS loves that &amp;quot;most things are a file&amp;quot; for certain operations:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;zfs send rpool&amp;#x2F;scratch@autosnap_2022-10-31_17:01:20_hourly | gzip &amp;gt; &amp;#x2F;srv&amp;#x2F;tmp&amp;#x2F;scratch.gz
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;However, I don&#x27;t think the ZFS&#x2F;btrfs&#x2F;NILFS2 communities have wrapped their collective heads around the idea that snapshot datasets can be useful everywhere, especially at the file (read: not dataset) level.&lt;&#x2F;p&gt;
+&lt;p&gt;This is the reason why Jim Salter&#x27;s &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;findoid&lt;&#x2F;a&gt; was such an inspiration for &lt;code&gt;httm&lt;&#x2F;code&gt; (along with &lt;code&gt;fzf&lt;&#x2F;code&gt;, &lt;code&gt;zsh&lt;&#x2F;code&gt; key bindings, and &lt;code&gt;rg&lt;&#x2F;code&gt;).  It was the first CLI tool I saw which made an attempt to deal with snapshots on a file level.  One could always go looking for file versions, but &lt;code&gt;findoid&lt;&#x2F;code&gt; made an effort to consolidate useful snapshot information about a specific file.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; attempts to take Jim&#x27;s very broad idea to its logical conclusion.  &lt;code&gt;httm&lt;&#x2F;code&gt; is an interactive, file-level Time Machine-like tool for ZFS&#x2F;btrfs&#x2F;NILFS2.  See:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;asciinema.org&#x2F;a&#x2F;529608&quot;&gt;&lt;img src=&quot;https:&#x2F;&#x2F;asciinema.org&#x2F;a&#x2F;529608.svg&quot; alt=&quot;asciicast&quot; &#x2F;&gt;&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Put simply -- &lt;code&gt;httm&lt;&#x2F;code&gt; aims to make all your snapshot data more easily accessible to all your UNIX tools, specifically, at the file level, because that&#x27;s where UNIX tools live, so you can create new and interesting things for yourself.&lt;&#x2F;p&gt;
+&lt;p&gt;So, what, in practice, does this mean?  It means -- as a ZFS guy, one NILFS2 feature that always impressed me was how it seems to &amp;quot;take&amp;quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS2 filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there. And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).  Just as I don&#x27;t understand how people live without snapshots, I didn&#x27;t want to live without &amp;quot;continuous&amp;quot; snapshots.  With &lt;code&gt;httm&lt;&#x2F;code&gt;&#x27;s help, my ZFS alternative to NILFS2 is simple -- instead of continuous snapshots, why don&#x27;t we simply take a snapshot, if we need to, before we do something silly.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.bash&quot;&gt;ounce&lt;&#x2F;a&gt; (codename: &amp;quot;dimebag&amp;quot;) is a wrapper script for &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; which gives you no mental overhead, non-periodic dynamic snapshots.&lt;&#x2F;p&gt;
+&lt;p&gt;When I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually &lt;code&gt;alias $EDITOR=&#x27;ounce --trace $EDITOR&#x27;&lt;&#x2F;code&gt;), &lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, and it sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago, because it uses seccomp and eBPF to trace all the file open calls my $EDITOR makes, and uses &lt;code&gt;httm&lt;&#x2F;code&gt; to check whether I have any un-snapshot-ed changes.  If I do, it takes a snapshot before I edit the file again.&lt;&#x2F;p&gt;
+&lt;p&gt;Instead of an auto-save, you have auto-snapshot. Of course, we can confirm the snapshot was taken with &lt;code&gt;httm&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;➜ httm &amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Tue Aug 09 16:46:14 2022  17.6 KiB  &amp;quot;&amp;#x2F;.zfs&amp;#x2F;snapshot&amp;#x2F;autosnap_2022-10-19_20:00:22_hourly&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+Fri Oct 21 09:11:17 2022  17.6 KiB  &amp;quot;&amp;#x2F;.zfs&amp;#x2F;snapshot&amp;#x2F;snap_2022-10-21-09:11:18_ounceSnapFileMount&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Fri Oct 21 09:11:25 2022  17.6 KiB  &amp;quot;&amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf&amp;quot;
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;ounce&lt;&#x2F;code&gt; is just one example of a new use enabled by snapshot data at your finger tips.  I hope you&#x27;ll find inspiration to use it to create something new and interesting for yourself too.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
     <entry xml:lang="en">
         <title>Why the Rust Trademark Policy was such a problem...</title>
         <published>2023-04-11T00:00:00+00:00</published>

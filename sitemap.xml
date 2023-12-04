@@ -33,6 +33,10 @@
         <lastmod>2022-10-20</lastmod>
     </url>
     <url>
+        <loc>/everything/</loc>
+        <lastmod>2023-12-04</lastmod>
+    </url>
+    <url>
         <loc>/git/</loc>
         <lastmod>2022-05-07</lastmod>
     </url>
@@ -74,6 +78,9 @@
         <loc>/tags/dano/</loc>
     </url>
     <url>
+        <loc>/tags/ebpf/</loc>
+    </url>
+    <url>
         <loc>/tags/ffmpeg/</loc>
     </url>
     <url>
@@ -101,6 +108,9 @@
         <loc>/tags/nicotine/</loc>
     </url>
     <url>
+        <loc>/tags/nilfs2/</loc>
+    </url>
+    <url>
         <loc>/tags/open-source/</loc>
     </url>
     <url>
@@ -111,6 +121,9 @@
     </url>
     <url>
         <loc>/tags/rust/</loc>
+    </url>
+    <url>
+        <loc>/tags/seccomp/</loc>
     </url>
     <url>
         <loc>/tags/snap/</loc>
