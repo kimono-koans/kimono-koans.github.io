@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>All your snapshot data, at your fingertips, enables NILFS2-inspired ZFS snapshots - kimono koans</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"><meta name="description" content="kimono koans&#x27; blog! All your snapshot data, at your fingertips, enables NILFS2-inspired ZFS snapshots "/><meta name="keywords" content="programming, misc., httm, ZFS, NILFS2, snapshots, recovery, seccomp, eBPF" />
+    <meta property="og:title" content="kimono koans&#x27; blog! -&nbsp;All your snapshot data, at your fingertips, enables NILFS2-inspired ZFS snapshots" />
+    <meta property="og:type" content="website"/><meta property="og:url" content="&#x2F;everything&#x2F;"/><meta property="og:description" content="kimono koans&#x27; blog!"/>
+    <link rel="preload" href="/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/style.css?h=97e262212a0704163528">
+    <link rel="stylesheet" href="/color/pink.css?h=49a4d53acd4ed3dfff01">
+<link rel="alternate" type="application/atom+xml" title="kimono koans&#x27; blog! RSS" href="/atom.xml"></head>
+    <body>
+        <div class="container">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="&#x2F;">
+    <div class="logo">
+        kimono-koans
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+                    <li>
+                        <a href="
+    
+        /about
+    
+">about</a>
+                    </li>
+                
+                    <li>
+                        <a href="
+    
+        /contact
+    
+">contact</a>
+                    </li>
+                
+            </ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        /about
+    
+">about</a>
+        </li>
+        <li>
+            <a href="
+    
+        /contact
+    
+">contact</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="&#x2F;everything&#x2F;">All your snapshot data, at your fingertips, enables NILFS2-inspired ZFS snapshots</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2023.12.04
+                [Updated: 2023.12.04]
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    :: {<a href="/categories/programming/">programming</a>,
+            <a href="/categories/misc/">misc.</a>} 
+
+            
+    ::
+    #<a href="/tags/httm/">httm</a>
+        
+    #<a href="/tags/zfs/">ZFS</a>
+        
+    #<a href="/tags/nilfs2/">NILFS2</a>
+        
+    #<a href="/tags/snapshots/">snapshots</a>
+        
+    #<a href="/tags/recovery/">recovery</a>
+        
+    #<a href="/tags/seccomp/">seccomp</a>
+        
+    #<a href="/tags/ebpf/">eBPF</a>
+        
+    
+            
+        
+    </div>
+
+            
+    
+
+
+</header><p>Of course, ZFS loves that &quot;most things are a file&quot; for certain operations:</p>
+<pre><code>zfs send rpool&#x2F;scratch@autosnap_2022-10-31_17:01:20_hourly | gzip &gt; &#x2F;srv&#x2F;tmp&#x2F;scratch.gz
+</code></pre>
+<p>However, I don't think the ZFS/btrfs/NILFS2 communities have wrapped their collective heads around the idea that snapshot datasets can be useful everywhere, especially at the file (read: not dataset) level.</p>
+<p>This is the reason why Jim Salter's <a href="https://github.com/jimsalterjrs/sanoid">findoid</a> was such an inspiration for <code>httm</code> (along with <code>fzf</code>, <code>zsh</code> key bindings, and <code>rg</code>).  It was the first CLI tool I saw which made an attempt to deal with snapshots on a file level.  One could always go looking for file versions, but <code>findoid</code> made an effort to consolidate useful snapshot information about a specific file.</p>
+<p><a href="https://github.com/kimono-koans/httm">httm</a> attempts to take Jim's very broad idea to its logical conclusion.  <code>httm</code> is an interactive, file-level Time Machine-like tool for ZFS/btrfs/NILFS2.  See:</p>
+<p><a href="https://asciinema.org/a/529608"><img src="https://asciinema.org/a/529608.svg" alt="asciicast" /></a></p>
+<p>Put simply -- <code>httm</code> aims to make all your snapshot data more easily accessible to all your UNIX tools, specifically, at the file level, because that's where UNIX tools live, so you can create new and interesting things for yourself.</p>
+<p>So, what, in practice, does this mean?  It means -- as a ZFS guy, one NILFS2 feature that always impressed me was how it seems to &quot;take&quot; continuous snapshots.  In addition to checkpoints, one can stop a NILFS2 filesystem from garbage collecting, roll back to a point in time, and recover a file that was once there. And, this seems great, if you can take the performance hit of a log-structured file system (which is substantial).  Just as I don't understand how people live without snapshots, I didn't want to live without &quot;continuous&quot; snapshots.  With <code>httm</code>'s help, my ZFS alternative to NILFS2 is simple -- instead of continuous snapshots, why don't we simply take a snapshot, if we need to, before we do something silly.</p>
+<p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> (codename: &quot;dimebag&quot;) is a wrapper script for <a href="https://github.com/kimono-koans/httm">httm</a> which gives you no mental overhead, non-periodic dynamic snapshots.</p>
+<p>When I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias $EDITOR='ounce --trace $EDITOR'</code>), <code>ounce</code> knows that it's smart and I'm dumb, and it sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago, because it uses seccomp and eBPF to trace all the file open calls my $EDITOR makes, and uses <code>httm</code> to check whether I have any un-snapshot-ed changes.  If I do, it takes a snapshot before I edit the file again.</p>
+<p>Instead of an auto-save, you have auto-snapshot. Of course, we can confirm the snapshot was taken with <code>httm</code>:</p>
+<pre><code>➜ httm &#x2F;etc&#x2F;samba&#x2F;smb.conf
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Tue Aug 09 16:46:14 2022  17.6 KiB  &quot;&#x2F;.zfs&#x2F;snapshot&#x2F;autosnap_2022-10-19_20:00:22_hourly&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+Fri Oct 21 09:11:17 2022  17.6 KiB  &quot;&#x2F;.zfs&#x2F;snapshot&#x2F;snap_2022-10-21-09:11:18_ounceSnapFileMount&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Fri Oct 21 09:11:25 2022  17.6 KiB  &quot;&#x2F;etc&#x2F;samba&#x2F;smb.conf&quot;
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+</code></pre>
+<p><code>ounce</code> is just one example of a new use enabled by snapshot data at your finger tips.  I hope you'll find inspiration to use it to create something new and interesting for yourself too.</p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright copyright--user">(c) Robert Swinford</div>
+    <script type="text/javascript" src="/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>
