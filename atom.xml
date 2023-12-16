@@ -5,8 +5,46 @@
     <link href="/atom.xml" rel="self" type="application/atom+xml"/>
     <link href="/"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2023-12-04T00:00:00+00:00</updated>
+    <updated>2023-12-15T00:00:00+00:00</updated>
     <id>/atom.xml</id>
+    <entry xml:lang="en">
+        <title>A cross platform, filesystem independent Time Machine (which directly supports your TM backups)</title>
+        <published>2023-12-15T00:00:00+00:00</published>
+        <updated>2023-12-15T00:00:00+00:00</updated>
+        <author>
+          <name>Unknown</name>
+        </author>
+        <link rel="alternate" href="/for-the-people/" type="text/html"/>
+        <id>/for-the-people/</id>
+        
+        <content type="html">&lt;p&gt;You can have it all -- the convenience of Time Machine backups, and the speed and flexibility of &lt;code&gt;httm&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, one could always use &lt;code&gt;httm&lt;&#x2F;code&gt; to browse all files in a folder backed up via &lt;code&gt;rsync&lt;&#x2F;code&gt; to a remote ZFS or btrfs share, if that share has a hidden snapshot directory:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;# mount the share
+➜ open smb:&amp;#x2F;&amp;#x2F;&amp;lt;your name&amp;gt;@&amp;lt;your remote share&amp;gt;.local&amp;#x2F;Home
+# execute httm 
+➜ httm -b -R &amp;#x2F;Volumes&amp;#x2F;Home
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Or one could use &lt;code&gt;httm&lt;&#x2F;code&gt; to browse all files in your local MacOS home directory, if you mapped that directory to a remote dataset. Note: The difference from above is, here, you would be browsing files from a &amp;quot;live&amp;quot; directory:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;# mount the share
+➜ open smb:&amp;#x2F;&amp;#x2F;&amp;lt;your name&amp;gt;@&amp;lt;your remote share&amp;gt;.local&amp;#x2F;Home
+# execute httm
+➜ httm -b -R --map-aliases &amp;#x2F;Users&amp;#x2F;&amp;lt;your name&amp;gt;:&amp;#x2F;Volumes&amp;#x2F;Home
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now, &lt;code&gt;httm&lt;&#x2F;code&gt; supports your Time Machine backups directly, when those backups are &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;equine.bash&quot;&gt;mounted&lt;&#x2F;a&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;➜ httm .zshrc
+─────────────────────────────────────────────────────────────────────────────────────
+Tue May 09 22:57:09 2023  6.7 KiB  &amp;quot;&amp;#x2F;Volumes&amp;#x2F;.timemachine&amp;#x2F;842A693F-CB54-4C5A-9AB1-C73681D4DFCD&amp;#x2F;2023-11-08-212757.backup&amp;#x2F;2023-11-08-212757.backup&amp;#x2F;Data&amp;#x2F;Users&amp;#x2F;kimono&amp;#x2F;.zshrc&amp;quot;
+Sun Nov 12 20:29:57 2023  6.7 KiB  &amp;quot;&amp;#x2F;Volumes&amp;#x2F;.timemachine&amp;#x2F;842A693F-CB54-4C5A-9AB1-C73681D4DFCD&amp;#x2F;2023-11-18-011056.backup&amp;#x2F;2023-11-18-011056.backup&amp;#x2F;Data&amp;#x2F;Users&amp;#x2F;kimono&amp;#x2F;.zshrc&amp;quot;
+Sun Nov 26 02:14:56 2023  6.7 KiB  &amp;quot;&amp;#x2F;Volumes&amp;#x2F;.timemachine&amp;#x2F;842A693F-CB54-4C5A-9AB1-C73681D4DFCD&amp;#x2F;2023-12-13-054342.backup&amp;#x2F;2023-12-13-054342.backup&amp;#x2F;Data&amp;#x2F;Users&amp;#x2F;kimono&amp;#x2F;.zshrc&amp;quot;
+─────────────────────────────────────────────────────────────────────────────────────
+Sun Nov 26 02:14:56 2023  6.7 KiB  &amp;quot;&amp;#x2F;Users&amp;#x2F;kimono&amp;#x2F;.zshrc&amp;quot;
+─────────────────────────────────────────────────────────────────────────────────────
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&quot;&gt;httm&lt;&#x2F;a&gt; prints the size, date and corresponding locations of available unique versions (deduplicated by modify time and size) of files residing on snapshots, but can also be used interactively to select and restore files, even snapshot mounts by file! httm might change the way you use snapshots (because ZFS&#x2F;BTRFS&#x2F;NILFS2 aren&#x27;t designed for finding for unique file versions) or the Time Machine concept (because httm is very fast!).&lt;&#x2F;p&gt;
+&lt;p&gt;For more info, see the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;README.md&quot;&gt;README&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
     <entry xml:lang="en">
         <title>All your snapshots, at your fingertips, enables NILFS2-inspired ZFS snapshots</title>
         <published>2023-12-04T00:00:00+00:00</published>

@@ -37,6 +37,10 @@
         <lastmod>2023-12-04</lastmod>
     </url>
     <url>
+        <loc>/for-the-people/</loc>
+        <lastmod>2023-12-15</lastmod>
+    </url>
+    <url>
         <loc>/git/</loc>
         <lastmod>2022-05-07</lastmod>
     </url>
@@ -105,6 +109,9 @@
         <loc>/tags/leadership/</loc>
     </url>
     <url>
+        <loc>/tags/macos/</loc>
+    </url>
+    <url>
         <loc>/tags/nicotine/</loc>
     </url>
     <url>
@@ -136,6 +143,9 @@
     </url>
     <url>
         <loc>/tags/tar/</loc>
+    </url>
+    <url>
+        <loc>/tags/time-machine/</loc>
     </url>
     <url>
         <loc>/tags/zfs/</loc>
