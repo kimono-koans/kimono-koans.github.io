@@ -78,7 +78,7 @@
             
     <div class="post-meta">
         <span class="post-date">2022.12.14
-                [Updated: 2022.12.16]
+                [Updated: 2023.12.18]
                 </span>
 
         <span class="post-author"></span>
@@ -199,9 +199,9 @@
 <pre><code>find &#x2F;dev&#x2F;disk&#x2F;by-id&#x2F; -type l | \
 grep -v -e part -e wwn | \
 while read disk; do
-	if [[ $(lsblk -o rota &quot;$disk&quot; | grep -c &quot;1&quot;) -gt 0 ]]; then
-		smartctl -d sat --nocheck=standby &quot;$disk&quot;
-	fi
+ if [[ $(lsblk -o rota &quot;$disk&quot; | grep -c &quot;1&quot;) -gt 0 ]]; then
+  smartctl -d sat --nocheck=standby &quot;$disk&quot;
+ fi
 done
 </code></pre>
 <p>Then, it becomes simple to check that condition whenever you invoke <code>sanoid</code>:</p>
@@ -213,9 +213,9 @@ done
 <p>Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path:</p>
 <pre><code>...
 if [[ $( &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;checkHDstatus | grep -i &#x27;Device&#x27; | &#x2F;usr&#x2F;bin&#x2F;grep -i -c &#x27;STANDBY&#x27; ) -gt 0 ]]; then
-	&#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;awake&#x2F;
+ &#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;awake&#x2F;
 else
-	&#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;sleep&#x2F;
+ &#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;sleep&#x2F;
 fi
 ...
 </code></pre>
@@ -236,7 +236,10 @@ fi
 <p>The first triggers we might consider are snapshots upon <code>apt upgrade</code> and kernel updates.</p>
 <p>First, you'll need a snapshot script to execute (perhaps called <code>/usr/local/sbin/snapPrepApt</code>):</p>
 <pre><code>DATE=&quot;$( &#x2F;bin&#x2F;date +%F-%T )&quot;
-zfs snapshot -r bpool@snap_&quot;$DATE&quot;_prepApt
+# FYI a user helpfully notes there may be some issue with snapshot-ing a bpool and GRUB
+# See: https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;issues&#x2F;11#issuecomment-1860329869
+#zfs snapshot -r bpool@snap_&quot;$DATE&quot;_prepApt
+zfs snapshot -r bpool&#x2F;BOOT@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot rpool@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot -r rpool&#x2F;ROOT@snap_&quot;$DATE&quot;_prepApt
 zfs snapshot -r rpool&#x2F;USERDATA@snap_&quot;$DATE&quot;_prepApt
@@ -277,7 +280,7 @@ root postexec = &quot;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;TMpost&quot;
 </h3>
 <p>Maybe you only want to take a snapshot of a folder when new files are added to it.  <code>inotifywait</code> is a wonderful tool for just that use case (and many others!):</p>
 <pre><code>inotifywait -m -e moved_to &quot;&#x2F;srv&#x2F;downloads&#x2F;&quot; | while read -r line; do
-	snapDownloads
+ snapDownloads
 done
 </code></pre>
 <h3 id="cleanup">Cleanup<a class="zola-anchor" href="#cleanup" aria-label="Anchor link for: cleanup">§</a>
@@ -298,7 +301,7 @@ httm took a snapshot named: rpool&#x2F;ROOT&#x2F;ubuntu_tiebek@snap_2022-12-14-1
 </code></pre>
 <p>In order for the above to work you will need permissions.  The most elegant way to give a user ZFS permissions is now through the new <code>zfs allow</code> function.  If you have <code>httm</code> installed on Ubuntu, running <code>ounce --give-priv</code>, as an ordinary user, will execute something like the block below to give an ordinary user (you!) permissions to snapshot on all pools.</p>
 <pre><code>for pool in &quot;$( sudo zpool list -o name | grep -v -e NAME )&quot;; do
-	sudo zfs allow &quot;$( whoami )&quot; mount,snapshot &quot;$pool&quot;
+ sudo zfs allow &quot;$( whoami )&quot; mount,snapshot &quot;$pool&quot;
 done
 </code></pre>
 <p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> is a script that I wrote which wraps a target executable, can trace its system calls, and execute snapshots <em>before</em> you do something silly.  <code>ounce</code> is my canonical example of a dynamic snapshot script.  When I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias 'nano'='ounce --trace nano'</code>), <code>ounce</code> knows that it's smart and I'm dumb, so it traces each file open call, sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago.  <code>ounce</code> sees I have no snapshot of those file changes, so it takes a snapshot of the dataset upon which <code>/etc/samba/smb.conf</code> is located, before I edit and save the file again.</p>

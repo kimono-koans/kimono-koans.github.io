@@ -5,7 +5,7 @@
     <link href="/atom.xml" rel="self" type="application/atom+xml"/>
     <link href="/"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2023-12-15T00:00:00+00:00</updated>
+    <updated>2023-12-18T00:00:00+00:00</updated>
     <id>/atom.xml</id>
     <entry xml:lang="en">
         <title>A cross platform, filesystem independent Time Machine (which directly supports your TM backups)</title>
@@ -161,7 +161,7 @@ index 3831a10..e895f53 100644
     <entry xml:lang="en">
         <title>A Somewhat Opinionated Guide to Effective ZFS Snapshots</title>
         <published>2022-12-14T00:00:00+00:00</published>
-        <updated>2022-12-16T00:00:00+00:00</updated>
+        <updated>2023-12-18T00:00:00+00:00</updated>
         <author>
           <name>Unknown</name>
         </author>
@@ -193,9 +193,9 @@ index 3831a10..e895f53 100644
 &lt;pre&gt;&lt;code&gt;find &amp;#x2F;dev&amp;#x2F;disk&amp;#x2F;by-id&amp;#x2F; -type l | \
 grep -v -e part -e wwn | \
 while read disk; do
-	if [[ $(lsblk -o rota &amp;quot;$disk&amp;quot; | grep -c &amp;quot;1&amp;quot;) -gt 0 ]]; then
-		smartctl -d sat --nocheck=standby &amp;quot;$disk&amp;quot;
-	fi
+ if [[ $(lsblk -o rota &amp;quot;$disk&amp;quot; | grep -c &amp;quot;1&amp;quot;) -gt 0 ]]; then
+  smartctl -d sat --nocheck=standby &amp;quot;$disk&amp;quot;
+ fi
 done
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;Then, it becomes simple to check that condition whenever you invoke &lt;code&gt;sanoid&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
@@ -207,9 +207,9 @@ done
 &lt;p&gt;Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
 if [[ $( &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;checkHDstatus | grep -i &amp;#x27;Device&amp;#x27; | &amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;grep -i -c &amp;#x27;STANDBY&amp;#x27; ) -gt 0 ]]; then
-	&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;awake&amp;#x2F;
+ &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;awake&amp;#x2F;
 else
-	&amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;sleep&amp;#x2F;
+ &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;sleep&amp;#x2F;
 fi
 ...
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
@@ -230,7 +230,10 @@ fi
 &lt;p&gt;The first triggers we might consider are snapshots upon &lt;code&gt;apt upgrade&lt;&#x2F;code&gt; and kernel updates.&lt;&#x2F;p&gt;
 &lt;p&gt;First, you&#x27;ll need a snapshot script to execute (perhaps called &lt;code&gt;&#x2F;usr&#x2F;local&#x2F;sbin&#x2F;snapPrepApt&lt;&#x2F;code&gt;):&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;DATE=&amp;quot;$( &amp;#x2F;bin&amp;#x2F;date +%F-%T )&amp;quot;
-zfs snapshot -r bpool@snap_&amp;quot;$DATE&amp;quot;_prepApt
+# FYI a user helpfully notes there may be some issue with snapshot-ing a bpool and GRUB
+# See: https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;kimono-koans&amp;#x2F;httm&amp;#x2F;issues&amp;#x2F;11#issuecomment-1860329869
+#zfs snapshot -r bpool@snap_&amp;quot;$DATE&amp;quot;_prepApt
+zfs snapshot -r bpool&amp;#x2F;BOOT@snap_&amp;quot;$DATE&amp;quot;_prepApt
 zfs snapshot rpool@snap_&amp;quot;$DATE&amp;quot;_prepApt
 zfs snapshot -r rpool&amp;#x2F;ROOT@snap_&amp;quot;$DATE&amp;quot;_prepApt
 zfs snapshot -r rpool&amp;#x2F;USERDATA@snap_&amp;quot;$DATE&amp;quot;_prepApt
@@ -271,7 +274,7 @@ root postexec = &amp;quot;&amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;TM
 &lt;&#x2F;h3&gt;
 &lt;p&gt;Maybe you only want to take a snapshot of a folder when new files are added to it.  &lt;code&gt;inotifywait&lt;&#x2F;code&gt; is a wonderful tool for just that use case (and many others!):&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;inotifywait -m -e moved_to &amp;quot;&amp;#x2F;srv&amp;#x2F;downloads&amp;#x2F;&amp;quot; | while read -r line; do
-	snapDownloads
+ snapDownloads
 done
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;cleanup&quot;&gt;Cleanup&lt;a class=&quot;zola-anchor&quot; href=&quot;#cleanup&quot; aria-label=&quot;Anchor link for: cleanup&quot;&gt;§&lt;&#x2F;a&gt;
@@ -292,7 +295,7 @@ httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_tiebek@snap_2022
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;In order for the above to work you will need permissions.  The most elegant way to give a user ZFS permissions is now through the new &lt;code&gt;zfs allow&lt;&#x2F;code&gt; function.  If you have &lt;code&gt;httm&lt;&#x2F;code&gt; installed on Ubuntu, running &lt;code&gt;ounce --give-priv&lt;&#x2F;code&gt;, as an ordinary user, will execute something like the block below to give an ordinary user (you!) permissions to snapshot on all pools.&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;for pool in &amp;quot;$( sudo zpool list -o name | grep -v -e NAME )&amp;quot;; do
-	sudo zfs allow &amp;quot;$( whoami )&amp;quot; mount,snapshot &amp;quot;$pool&amp;quot;
+ sudo zfs allow &amp;quot;$( whoami )&amp;quot; mount,snapshot &amp;quot;$pool&amp;quot;
 done
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.bash&quot;&gt;ounce&lt;&#x2F;a&gt; is a script that I wrote which wraps a target executable, can trace its system calls, and execute snapshots &lt;em&gt;before&lt;&#x2F;em&gt; you do something silly.  &lt;code&gt;ounce&lt;&#x2F;code&gt; is my canonical example of a dynamic snapshot script.  When I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually &lt;code&gt;alias &#x27;nano&#x27;=&#x27;ounce --trace nano&#x27;&lt;&#x2F;code&gt;), &lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, so it traces each file open call, sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago.  &lt;code&gt;ounce&lt;&#x2F;code&gt; sees I have no snapshot of those file changes, so it takes a snapshot of the dataset upon which &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; is located, before I edit and save the file again.&lt;&#x2F;p&gt;
