@@ -78,7 +78,7 @@
             
     <div class="post-meta">
         <span class="post-date">2022.12.14
-                [Updated: 2023.12.18]
+                [Updated: 2023.12.19]
                 </span>
 
         <span class="post-author"></span>
@@ -191,10 +191,10 @@
 <p>Let's discuss each.</p>
 <h2 id="periodic-snapshots">Periodic Snapshots<a class="zola-anchor" href="#periodic-snapshots" aria-label="Anchor link for: periodic-snapshots">§</a>
 </h2>
-<p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention, <code>sanoid</code> and <code>syncoid</code> have made periodic snapshots simple for me.</p>
+<p>Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme, and I wholeheartedly recommend <a href="https://github.com/jimsalterjrs/sanoid">sanoid</a> as a periodic snapshot tool.  For those that don't already know, <code>sanoid</code> describes itself as &quot;a policy-driven snapshot management tool for ZFS filesystems&quot;.  Although other tools exist and perhaps deserve mention, <code>sanoid</code> and <code>syncoid</code>, its replication tools, have made periodic snapshots and replication simple for me.</p>
 <p>But note -- like any good tool -- <code>sanoid</code> isn't a perfect fit for every use case (and shouldn't be, see later <code>zsys</code> and the &quot;Curse of Trying to Do Too Much&quot;).  But what <code>sanoid</code> <em>is</em> is simple and composable.</p>
-<p>In my mind, what makes <code>sanoid</code> great is that it doesn't force you into using all its features, all the time.  It doesn't force you into a complicated policy/scheme (even I can do it!).  It presents two simple user interfaces instead of one overly complicated one.  There is no learning curve.  It just works.  It allows you to compose it with your other Linux tools, and doesn't break when you do something a little different.</p>
-<p>For instance, suppose you want to sleep your NAS drives occasionally and not invoke <code>sanoid</code> when your drives are sleeping.  Here's how this user solved this particular problem.</p>
+<p>To my mind, what makes <code>sanoid</code> great is that it doesn't force you into using all its features, all the time.  It doesn't force you into a complicated policy/scheme (even I can do it!), and since it includes such good <a href="https://github.com/jimsalterjrs/sanoid/blob/master/sanoid.conf">documentation</a>, I won't waste time discussing how to initially configure your pools here.</p>
+<p>Instead, I'd like to highlight, how, in contrast to some other tools, it allows you to compose it with your other Linux utilities, and doesn't break when you do something a little different.  For instance, suppose you want to sleep your NAS drives occasionally and not invoke <code>sanoid</code> when your drives are sleeping.  Here's how this user solved this particular problem.</p>
 <p>First, you'll need to check if any of the spinning rust drives are sleeping:</p>
 <pre><code>find &#x2F;dev&#x2F;disk&#x2F;by-id&#x2F; -type l | \
 grep -v -e part -e wwn | \
@@ -210,7 +210,7 @@ done
 &#x2F;usr&#x2F;sbin&#x2F;sanoid --prune-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;
 ...
 </code></pre>
-<p>Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path:</p>
+<p>Now imagine you want to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path:</p>
 <pre><code>...
 if [[ $( &#x2F;usr&#x2F;local&#x2F;sbin&#x2F;checkHDstatus | grep -i &#x27;Device&#x27; | &#x2F;usr&#x2F;bin&#x2F;grep -i -c &#x27;STANDBY&#x27; ) -gt 0 ]]; then
  &#x2F;usr&#x2F;sbin&#x2F;sanoid --take-snapshots --verbose --configdir=&#x2F;etc&#x2F;sanoid&#x2F;awake&#x2F;
@@ -304,7 +304,7 @@ httm took a snapshot named: rpool&#x2F;ROOT&#x2F;ubuntu_tiebek@snap_2022-12-14-1
  sudo zfs allow &quot;$( whoami )&quot; mount,snapshot &quot;$pool&quot;
 done
 </code></pre>
-<p><a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a> is a script that I wrote which wraps a target executable, can trace its system calls, and execute snapshots <em>before</em> you do something silly.  <code>ounce</code> is my canonical example of a dynamic snapshot script.  When I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias 'nano'='ounce --trace nano'</code>), <code>ounce</code> knows that it's smart and I'm dumb, so it traces each file open call, sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago.  <code>ounce</code> sees I have no snapshot of those file changes, so it takes a snapshot of the dataset upon which <code>/etc/samba/smb.conf</code> is located, before I edit and save the file again.</p>
+<p>Speaking of <a href="https://github.com/kimono-koans/httm/blob/master/scripts/ounce.bash">ounce</a>, <code>ounce</code> is a script I wrote which wraps a target executable, can trace its system calls, and will execute snapshots <em>before</em> you do something silly.  <code>ounce</code> is my canonical example of a dynamic snapshot script.  When I type <code>ounce nano /etc/samba/smb.conf</code> (I actually <code>alias 'nano'='ounce --trace nano'</code>), <code>ounce</code> knows that it's smart and I'm dumb, so -- it traces each file open call, sees that I just edited <code>/etc/samba/smb.conf</code> a few short minutes ago.  Once <code>ounce</code> sees I have no snapshot of those file changes, it takes a snapshot of the dataset upon which <code>/etc/samba/smb.conf</code> is located, before I edit and save the file again.</p>
 <p>We can check that <code>ounce</code> worked as advertised via <code>httm</code>:</p>
 <pre><code>➜ httm &#x2F;etc&#x2F;samba&#x2F;smb.conf
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────

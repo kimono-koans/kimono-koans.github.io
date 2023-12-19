@@ -5,7 +5,7 @@
     <link href="/atom.xml" rel="self" type="application/atom+xml"/>
     <link href="/"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2023-12-18T00:00:00+00:00</updated>
+    <updated>2023-12-19T00:00:00+00:00</updated>
     <id>/atom.xml</id>
     <entry xml:lang="en">
         <title>A cross platform, filesystem independent Time Machine (which directly supports your TM backups)</title>
@@ -161,7 +161,7 @@ index 3831a10..e895f53 100644
     <entry xml:lang="en">
         <title>A Somewhat Opinionated Guide to Effective ZFS Snapshots</title>
         <published>2022-12-14T00:00:00+00:00</published>
-        <updated>2023-12-18T00:00:00+00:00</updated>
+        <updated>2023-12-19T00:00:00+00:00</updated>
         <author>
           <name>Unknown</name>
         </author>
@@ -185,10 +185,10 @@ index 3831a10..e895f53 100644
 &lt;p&gt;Let&#x27;s discuss each.&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;periodic-snapshots&quot;&gt;Periodic Snapshots&lt;a class=&quot;zola-anchor&quot; href=&quot;#periodic-snapshots&quot; aria-label=&quot;Anchor link for: periodic-snapshots&quot;&gt;§&lt;&#x2F;a&gt;
 &lt;&#x2F;h2&gt;
-&lt;p&gt;Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme.  I wholeheartedly recommend &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;sanoid&lt;&#x2F;a&gt; as a periodic snapshot tool.  For those that don&#x27;t already know, &lt;code&gt;sanoid&lt;&#x2F;code&gt; describes itself as &amp;quot;a policy-driven snapshot management tool for ZFS filesystems&amp;quot;.  Although other tools exist and perhaps deserve mention, &lt;code&gt;sanoid&lt;&#x2F;code&gt; and &lt;code&gt;syncoid&lt;&#x2F;code&gt; have made periodic snapshots simple for me.&lt;&#x2F;p&gt;
+&lt;p&gt;Periodic snapshots, or snapshots taken at a regular intervals, should be considered the base of any good snapshot scheme, and I wholeheartedly recommend &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&quot;&gt;sanoid&lt;&#x2F;a&gt; as a periodic snapshot tool.  For those that don&#x27;t already know, &lt;code&gt;sanoid&lt;&#x2F;code&gt; describes itself as &amp;quot;a policy-driven snapshot management tool for ZFS filesystems&amp;quot;.  Although other tools exist and perhaps deserve mention, &lt;code&gt;sanoid&lt;&#x2F;code&gt; and &lt;code&gt;syncoid&lt;&#x2F;code&gt;, its replication tools, have made periodic snapshots and replication simple for me.&lt;&#x2F;p&gt;
 &lt;p&gt;But note -- like any good tool -- &lt;code&gt;sanoid&lt;&#x2F;code&gt; isn&#x27;t a perfect fit for every use case (and shouldn&#x27;t be, see later &lt;code&gt;zsys&lt;&#x2F;code&gt; and the &amp;quot;Curse of Trying to Do Too Much&amp;quot;).  But what &lt;code&gt;sanoid&lt;&#x2F;code&gt; &lt;em&gt;is&lt;&#x2F;em&gt; is simple and composable.&lt;&#x2F;p&gt;
-&lt;p&gt;In my mind, what makes &lt;code&gt;sanoid&lt;&#x2F;code&gt; great is that it doesn&#x27;t force you into using all its features, all the time.  It doesn&#x27;t force you into a complicated policy&#x2F;scheme (even I can do it!).  It presents two simple user interfaces instead of one overly complicated one.  There is no learning curve.  It just works.  It allows you to compose it with your other Linux tools, and doesn&#x27;t break when you do something a little different.&lt;&#x2F;p&gt;
-&lt;p&gt;For instance, suppose you want to sleep your NAS drives occasionally and not invoke &lt;code&gt;sanoid&lt;&#x2F;code&gt; when your drives are sleeping.  Here&#x27;s how this user solved this particular problem.&lt;&#x2F;p&gt;
+&lt;p&gt;To my mind, what makes &lt;code&gt;sanoid&lt;&#x2F;code&gt; great is that it doesn&#x27;t force you into using all its features, all the time.  It doesn&#x27;t force you into a complicated policy&#x2F;scheme (even I can do it!), and since it includes such good &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;jimsalterjrs&#x2F;sanoid&#x2F;blob&#x2F;master&#x2F;sanoid.conf&quot;&gt;documentation&lt;&#x2F;a&gt;, I won&#x27;t waste time discussing how to initially configure your pools here.&lt;&#x2F;p&gt;
+&lt;p&gt;Instead, I&#x27;d like to highlight, how, in contrast to some other tools, it allows you to compose it with your other Linux utilities, and doesn&#x27;t break when you do something a little different.  For instance, suppose you want to sleep your NAS drives occasionally and not invoke &lt;code&gt;sanoid&lt;&#x2F;code&gt; when your drives are sleeping.  Here&#x27;s how this user solved this particular problem.&lt;&#x2F;p&gt;
 &lt;p&gt;First, you&#x27;ll need to check if any of the spinning rust drives are sleeping:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;find &amp;#x2F;dev&amp;#x2F;disk&amp;#x2F;by-id&amp;#x2F; -type l | \
 grep -v -e part -e wwn | \
@@ -204,7 +204,7 @@ done
 &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --prune-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;
 ...
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;Now imagine you wanted to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path:&lt;&#x2F;p&gt;
+&lt;p&gt;Now imagine you want to use an alternate configuration file when that spinning rust is asleep.  Just change the configuration file path:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;...
 if [[ $( &amp;#x2F;usr&amp;#x2F;local&amp;#x2F;sbin&amp;#x2F;checkHDstatus | grep -i &amp;#x27;Device&amp;#x27; | &amp;#x2F;usr&amp;#x2F;bin&amp;#x2F;grep -i -c &amp;#x27;STANDBY&amp;#x27; ) -gt 0 ]]; then
  &amp;#x2F;usr&amp;#x2F;sbin&amp;#x2F;sanoid --take-snapshots --verbose --configdir=&amp;#x2F;etc&amp;#x2F;sanoid&amp;#x2F;awake&amp;#x2F;
@@ -298,7 +298,7 @@ httm took a snapshot named: rpool&amp;#x2F;ROOT&amp;#x2F;ubuntu_tiebek@snap_2022
  sudo zfs allow &amp;quot;$( whoami )&amp;quot; mount,snapshot &amp;quot;$pool&amp;quot;
 done
 &lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.bash&quot;&gt;ounce&lt;&#x2F;a&gt; is a script that I wrote which wraps a target executable, can trace its system calls, and execute snapshots &lt;em&gt;before&lt;&#x2F;em&gt; you do something silly.  &lt;code&gt;ounce&lt;&#x2F;code&gt; is my canonical example of a dynamic snapshot script.  When I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually &lt;code&gt;alias &#x27;nano&#x27;=&#x27;ounce --trace nano&#x27;&lt;&#x2F;code&gt;), &lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, so it traces each file open call, sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago.  &lt;code&gt;ounce&lt;&#x2F;code&gt; sees I have no snapshot of those file changes, so it takes a snapshot of the dataset upon which &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; is located, before I edit and save the file again.&lt;&#x2F;p&gt;
+&lt;p&gt;Speaking of &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;kimono-koans&#x2F;httm&#x2F;blob&#x2F;master&#x2F;scripts&#x2F;ounce.bash&quot;&gt;ounce&lt;&#x2F;a&gt;, &lt;code&gt;ounce&lt;&#x2F;code&gt; is a script I wrote which wraps a target executable, can trace its system calls, and will execute snapshots &lt;em&gt;before&lt;&#x2F;em&gt; you do something silly.  &lt;code&gt;ounce&lt;&#x2F;code&gt; is my canonical example of a dynamic snapshot script.  When I type &lt;code&gt;ounce nano &#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; (I actually &lt;code&gt;alias &#x27;nano&#x27;=&#x27;ounce --trace nano&#x27;&lt;&#x2F;code&gt;), &lt;code&gt;ounce&lt;&#x2F;code&gt; knows that it&#x27;s smart and I&#x27;m dumb, so -- it traces each file open call, sees that I just edited &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; a few short minutes ago.  Once &lt;code&gt;ounce&lt;&#x2F;code&gt; sees I have no snapshot of those file changes, it takes a snapshot of the dataset upon which &lt;code&gt;&#x2F;etc&#x2F;samba&#x2F;smb.conf&lt;&#x2F;code&gt; is located, before I edit and save the file again.&lt;&#x2F;p&gt;
 &lt;p&gt;We can check that &lt;code&gt;ounce&lt;&#x2F;code&gt; worked as advertised via &lt;code&gt;httm&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
 &lt;pre&gt;&lt;code&gt;➜ httm &amp;#x2F;etc&amp;#x2F;samba&amp;#x2F;smb.conf
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
